@@ -49,7 +49,7 @@ func HandleUpdate(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 		}
 		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, message))
 	} else if strings.HasPrefix(messageString, "/fillhours") {
-		message, err := HandleFillMessage(messageString, update, bot, tokens, hosts)
+		message, err := HandleFillMessage(messageString, update, tokens, hosts)
 		if err != nil {
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 		}

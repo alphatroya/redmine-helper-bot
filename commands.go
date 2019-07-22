@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -36,7 +35,7 @@ func HandleHostMessage(message string, tokens map[int64]string, chatID int64) (s
 	return "Адрес сервера успешно обновлен", nil
 }
 
-func HandleFillMessage(message string, update tgbotapi.Update, bot *tgbotapi.BotAPI, tokens map[int64]string, hosts map[int64]string) (string, error) {
+func HandleFillMessage(message string, update tgbotapi.Update, tokens map[int64]string, hosts map[int64]string) (string, error) {
 	log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 	token, ok := tokens[update.Message.Chat.ID]
@@ -54,16 +53,15 @@ func HandleFillMessage(message string, update tgbotapi.Update, bot *tgbotapi.Bot
 		return "", fmt.Errorf("Неправильное количество аргументов")
 	}
 
-	err := MakeFillHoursRequest(token, host, splitted)
+	requestBody, err := MakeFillHoursRequest(token, host, splitted)
 	if err != nil {
 		return "", err
 	}
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Test updated")
-	bot.Send(msg)
-	return "Success", nil
+	resultMessage := fmt.Sprintf("В задачу %s добавлено часов: %s", requestBody.TimeEntry.IssueID, requestBody.TimeEntry.Hours)
+	return resultMessage, nil
 }
 
-func MakeFillHoursRequest(token string, host string, message []string) error {
+func MakeFillHoursRequest(token string, host string, message []string) (*RequestBody, error) {
 	requestBody := new(RequestBody)
 	requestBody.TimeEntry = new(TimeEntry)
 	requestBody.TimeEntry.IssueID = message[1]
@@ -72,13 +70,12 @@ func MakeFillHoursRequest(token string, host string, message []string) error {
 
 	json, err := json.Marshal(requestBody)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	log.Printf("data %s", json)
 
 	request, err := http.NewRequest("POST", host+"/time_entries.json", bytes.NewBuffer(json))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	request.Header.Set("X-Redmine-API-Key", token)
@@ -87,10 +84,5 @@ func MakeFillHoursRequest(token string, host string, message []string) error {
 	response, _ := client.Do(request)
 
 	defer response.Body.Close()
-
-	fmt.Println("response Status:", response.Status)
-	fmt.Println("response Headers:", response.Header)
-	body, _ := ioutil.ReadAll(response.Body)
-	fmt.Println("response Body:", string(body))
-	return nil
+	return requestBody, nil
 }
