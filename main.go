@@ -3,9 +3,13 @@ package main
 import (
 	"log"
 	"os"
+	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
+
+var tokens = make(map[int64]string)
+var hosts = make(map[int64]string)
 
 func main() {
 	apiKey := os.Getenv("TELEGRAM_BOT_KEY")
@@ -18,20 +22,39 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	updateConfig := tgbotapi.NewUpdate(0)
+	updateConfig.Timeout = 60
 
-	updates, err := bot.GetUpdatesChan(u)
+	updates, err := bot.GetUpdatesChan(updateConfig)
+	if err != nil {
+		log.Panic(err)
+	}
 
 	for update := range updates {
-		if update.Message == nil {
-			continue
+		HandleUpdate(bot, update)
+	}
+}
+
+func HandleUpdate(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
+	if update.Message == nil {
+		return
+	}
+	messageString := update.Message.Text
+	if strings.HasPrefix(messageString, "/token") {
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HandleTokenMessage(messageString, tokens, update.Message.Chat.ID)))
+	} else if strings.HasPrefix(messageString, "/host") {
+		message, err := HandleHostMessage(messageString, hosts, update.Message.Chat.ID)
+		if err != nil {
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 		}
-
-		log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-
-		bot.Send(msg)
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, message))
+	} else if strings.HasPrefix(messageString, "/fillhours") {
+		message, err := HandleFillMessage(messageString, update, bot, tokens, hosts)
+		if err != nil {
+			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+		}
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, message))
+	} else {
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Введена неправильная команда"))
 	}
 }

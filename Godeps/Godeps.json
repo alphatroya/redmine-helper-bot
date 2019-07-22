@@ -2,9 +2,6 @@
 	"ImportPath": "github.com/alphatroya/redmine-helper-bot",
 	"GoVersion": "go1.12",
 	"GodepVersion": "v80",
-	"Packages": [
-		"./..."
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/go-telegram-bot-api/telegram-bot-api",
