@@ -51,7 +51,7 @@ func HandleUpdate(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	}
 	messageString := update.Message.Text
 	if strings.HasPrefix(messageString, "/token") {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HandleTokenMessage(messageString, tokens, update.Message.Chat.ID)))
+		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HandleTokenMessage(messageString, redisClient, update.Message.Chat.ID)))
 	} else if strings.HasPrefix(messageString, "/host") {
 		message, err := HandleHostMessage(messageString, hosts, update.Message.Chat.ID)
 		if err != nil {

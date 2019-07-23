@@ -10,16 +10,16 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-func HandleTokenMessage(message string, tokens map[int64]string, chatID int64) string {
+func HandleTokenMessage(message string, redisClient redis.Cmdable, chatID int64) string {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) != 2 {
 		return "Неправильное количество аргументов"
 	}
 	redisClient.Set(fmt.Sprint(chatID)+"_token", splittedMessage[1], 0)
-	tokens[chatID] = splittedMessage[1]
 	return "Токен успешно обновлен"
 }
 
