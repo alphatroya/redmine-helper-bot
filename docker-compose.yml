@@ -1,0 +1,20 @@
+version: "2"
+services:
+  redis:
+    image: redis:3.0
+    expose:
+      - 6379
+    command: >
+     --requirepass $REDIS_PASSWORD
+
+  redmine-bot:
+    build: .
+    command: app
+    links:
+      - redis
+    depends_on:
+      - redis
+    environment:
+      TELEGRAM_BOT_KEY: $TELEGRAM_BOT_KEY
+      REDIS_PASSWORD: $REDIS_PASSWORD
+

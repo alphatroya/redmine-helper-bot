@@ -5,13 +5,23 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 var tokens = make(map[int64]string)
 var hosts = make(map[int64]string)
+var redisClient *redis.Client
 
 func main() {
+	redisClient = redis.NewClient(&redis.Options{
+		Addr:     "redis:6379",
+		Password: os.Getenv("REDIS_PASSWORD"),
+		DB:       0,
+	})
+	pong, err := redisClient.Ping().Result()
+	log.Println(pong, err)
+
 	apiKey := os.Getenv("TELEGRAM_BOT_KEY")
 	bot, err := tgbotapi.NewBotAPI(apiKey)
 	if err != nil {
