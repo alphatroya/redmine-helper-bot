@@ -10,14 +10,6 @@ import (
 	"strings"
 
 	"github.com/go-redis/redis"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-)
-
-const (
-	WrongTokenMessageResponse   = "Неправильное количество аргументов"
-	SuccessTokenMessageResponse = "Токен успешно обновлен"
-	WrongHostMessageResponse    = "Неправильное количество аргументов"
-	SuccessHostMessageResponse  = "Адрес сервера успешно обновлен"
 )
 
 func HandleTokenMessage(message string, redisClient redis.Cmdable, chatID int64) string {
@@ -42,8 +34,8 @@ func HandleHostMessage(message string, redisClient redis.Cmdable, chatID int64) 
 	return SuccessHostMessageResponse, nil
 }
 
-func HandleFillMessage(message string, update tgbotapi.Update, redisClient redis.Cmdable) (string, error) {
-	chatIDString := fmt.Sprint(update.Message.From.ID)
+func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable) (string, error) {
+	chatIDString := fmt.Sprint(chatID)
 
 	token, err := redisClient.Get(chatIDString + "_token").Result()
 	if err != nil {
