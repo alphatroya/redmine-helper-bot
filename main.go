@@ -9,8 +9,6 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var tokens = make(map[int64]string)
-var hosts = make(map[int64]string)
 var redisClient *redis.Client
 
 func main() {
@@ -19,13 +17,15 @@ func main() {
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
 	})
-	pong, err := redisClient.Ping().Result()
-	log.Println(pong, err)
+	_, err := redisClient.Ping().Result()
+	if err != nil {
+		log.Panicf("Connection to Redis instance is broken: %s", err)
+	}
 
 	apiKey := os.Getenv("TELEGRAM_BOT_KEY")
 	bot, err := tgbotapi.NewBotAPI(apiKey)
 	if err != nil {
-		log.Panic(err)
+		log.Panicf("Connection to telegram bot is broken: %s", err)
 	}
 
 	bot.Debug = true
@@ -53,13 +53,13 @@ func HandleUpdate(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
 	if strings.HasPrefix(messageString, "/token") {
 		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HandleTokenMessage(messageString, redisClient, update.Message.Chat.ID)))
 	} else if strings.HasPrefix(messageString, "/host") {
-		message, err := HandleHostMessage(messageString, hosts, update.Message.Chat.ID)
+		message, err := HandleHostMessage(messageString, redisClient, update.Message.Chat.ID)
 		if err != nil {
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 		}
 		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, message))
 	} else if strings.HasPrefix(messageString, "/fillhours") {
-		message, err := HandleFillMessage(messageString, update, tokens, hosts)
+		message, err := HandleFillMessage(messageString, update, redisClient)
 		if err != nil {
 			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
 		}
