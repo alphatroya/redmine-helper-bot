@@ -41,30 +41,33 @@ func main() {
 	}
 
 	for update := range updates {
-		HandleUpdate(bot, update)
+		if update.Message == nil {
+			continue
+		}
+		HandleUpdate(bot, update.Message.Text, update.Message.Chat.ID)
 	}
 }
 
-func HandleUpdate(bot *tgbotapi.BotAPI, update tgbotapi.Update) {
-	if update.Message == nil {
-		return
-	}
-	messageString := update.Message.Text
-	if strings.HasPrefix(messageString, "/token") {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, HandleTokenMessage(messageString, redisClient, update.Message.Chat.ID)))
-	} else if strings.HasPrefix(messageString, "/host") {
-		message, err := HandleHostMessage(messageString, redisClient, update.Message.Chat.ID)
+func HandleUpdate(bot BotSender, message string, chatID int64) {
+	if strings.HasPrefix(message, "/token") {
+		bot.Send(tgbotapi.NewMessage(chatID, HandleTokenMessage(message, redisClient, chatID)))
+	} else if strings.HasPrefix(message, "/host") {
+		message, err := HandleHostMessage(message, redisClient, chatID)
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+			bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 		}
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, message))
-	} else if strings.HasPrefix(messageString, "/fillhours") {
-		message, err := HandleFillMessage(messageString, update, redisClient)
+		bot.Send(tgbotapi.NewMessage(chatID, message))
+	} else if strings.HasPrefix(message, "/fillhours") {
+		message, err := HandleFillMessage(message, chatID, redisClient)
 		if err != nil {
-			bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, err.Error()))
+			bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 		}
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, message))
+		bot.Send(tgbotapi.NewMessage(chatID, message))
 	} else {
-		bot.Send(tgbotapi.NewMessage(update.Message.Chat.ID, "Введена неправильная команда"))
+		bot.Send(tgbotapi.NewMessage(chatID, UnknownCommandResponse))
 	}
+}
+
+type BotSender interface {
+	Send(c tgbotapi.Chattable) (tgbotapi.Message, error)
 }
