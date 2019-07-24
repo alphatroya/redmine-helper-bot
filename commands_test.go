@@ -44,6 +44,27 @@ func TestHandleTokenMessageWithCorrectCommand(t *testing.T) {
 	}
 }
 
+func TestHandleTokenMessageWithMultipleCommands(t *testing.T) {
+	command := "4433"
+	var chatID int64 = 1
+
+	command2 := "4433"
+	var chatID2 int64 = 2
+
+	mock := NewRedisMock("_token")
+
+	_ = HandleTokenMessage("/token "+command, mock, chatID)
+	result := HandleTokenMessage("/token "+command2, mock, chatID2)
+
+	tokenValue := mock.Get(fmt.Sprint(chatID2)).Val()
+	if tokenValue != command2 {
+		t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, command2)
+	}
+	if result != SuccessTokenMessageResponse {
+		t.Errorf("Wrong response from handling token command")
+	}
+}
+
 func TestHandleHostMessageWithWrongCommand(t *testing.T) {
 	tables := []struct {
 		message string
