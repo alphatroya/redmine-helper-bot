@@ -5,41 +5,44 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
 
+	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-func HandleTokenMessage(message string, tokens map[int64]string, chatID int64) string {
+const (
+	WrongTokenMessageResponse   = "Неправильное количество аргументов"
+	SuccessTokenMessageResponse = "Токен успешно обновлен"
+	WrongHostMessageResponse    = "Неправильное количество аргументов"
+	SuccessHostMessageResponse  = "Адрес сервера успешно обновлен"
+)
+
+func HandleTokenMessage(message string, redisClient redis.Cmdable, chatID int64) string {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) != 2 {
-		return "Неправильное количество аргументов"
+		return WrongTokenMessageResponse
 	}
 	redisClient.Set(fmt.Sprint(chatID)+"_token", splittedMessage[1], 0)
-	tokens[chatID] = splittedMessage[1]
-	return "Токен успешно обновлен"
+	return SuccessTokenMessageResponse
 }
 
-func HandleHostMessage(message string, tokens map[int64]string, chatID int64) (string, error) {
+func HandleHostMessage(message string, redisClient redis.Cmdable, chatID int64) (string, error) {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) != 2 {
-		return "", errors.New("Неправильное количество аргументов")
+		return "", errors.New(WrongHostMessageResponse)
 	}
 	_, err := url.ParseRequestURI(splittedMessage[1])
 	if err != nil {
 		return "", err
 	}
 	redisClient.Set(fmt.Sprint(chatID)+"_host", splittedMessage[1], 0)
-	tokens[chatID] = splittedMessage[1]
-	return "Адрес сервера успешно обновлен", nil
+	return SuccessHostMessageResponse, nil
 }
 
-func HandleFillMessage(message string, update tgbotapi.Update, tokens map[int64]string, hosts map[int64]string) (string, error) {
-	log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
-
+func HandleFillMessage(message string, update tgbotapi.Update, redisClient redis.Cmdable) (string, error) {
 	chatIDString := fmt.Sprint(update.Message.From.ID)
 
 	token, err := redisClient.Get(chatIDString + "_token").Result()
