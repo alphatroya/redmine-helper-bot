@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 	"strings"
 
@@ -58,7 +59,7 @@ func HandleUpdate(bot BotSender, message string, chatID int64) {
 		}
 		bot.Send(tgbotapi.NewMessage(chatID, message))
 	} else if strings.HasPrefix(message, "/fillhours") {
-		message, err := HandleFillMessage(message, chatID, redisClient)
+		message, err := HandleFillMessage(message, chatID, redisClient, &http.Client{})
 		if err != nil {
 			bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 		}

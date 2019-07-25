@@ -12,6 +12,10 @@ import (
 	"github.com/go-redis/redis"
 )
 
+type HttpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+}
+
 func HandleTokenMessage(message string, redisClient redis.Cmdable, chatID int64) string {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) != 2 {
@@ -34,7 +38,7 @@ func HandleHostMessage(message string, redisClient redis.Cmdable, chatID int64) 
 	return SuccessHostMessageResponse, nil
 }
 
-func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable) (string, error) {
+func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, client HttpClient) (string, error) {
 	chatIDString := fmt.Sprint(chatID)
 
 	token, err := redisClient.Get(chatIDString + "_token").Result()
@@ -52,15 +56,15 @@ func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable) 
 		return "", fmt.Errorf("Неправильное количество аргументов")
 	}
 
-	requestBody, err := MakeFillHoursRequest(token, host, splitted)
+	requestBody, err := MakeFillHoursRequest(token, host, splitted, client)
 	if err != nil {
 		return "", err
 	}
-	resultMessage := fmt.Sprintf("В задачу %s добавлено часов: %s", requestBody.TimeEntry.IssueID, requestBody.TimeEntry.Hours)
+	resultMessage := fmt.Sprintf(SuccessFillHoursMessageResponse, requestBody.TimeEntry.IssueID, requestBody.TimeEntry.Hours)
 	return resultMessage, nil
 }
 
-func MakeFillHoursRequest(token string, host string, message []string) (*RequestBody, error) {
+func MakeFillHoursRequest(token string, host string, message []string, client HttpClient) (*RequestBody, error) {
 	requestBody := new(RequestBody)
 	requestBody.TimeEntry = new(TimeEntry)
 	requestBody.TimeEntry.IssueID = message[1]
@@ -79,9 +83,14 @@ func MakeFillHoursRequest(token string, host string, message []string) (*Request
 
 	request.Header.Set("X-Redmine-API-Key", token)
 	request.Header.Set("Content-Type", "application/json")
-	client := &http.Client{}
-	response, _ := client.Do(request)
+	response, err := client.Do(request)
+	if response.Body != nil {
+		defer response.Body.Close()
+	}
 
-	defer response.Body.Close()
+	if err != nil {
+		return nil, err
+	}
+
 	return requestBody, nil
 }
