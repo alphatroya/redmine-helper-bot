@@ -19,14 +19,17 @@ const (
 )
 
 func SuccessFillHoursMessageResponse(issueID string, hours string, host string) string {
-	message := fmt.Sprintf("В задачу [#%s](%s/issues/%s/time_entries) добавлено часов: *%s*", issueID, host, issueID, hours)
+	message := fmt.Sprintf("В задачу [#%s](%s/issues/%s/time_entries) добавлено часов: *%s*\n", issueID, host, issueID, hours)
 	number, _ := strconv.ParseInt(hours, 10, 64)
 	if number > 0 {
-		message += " "
+		message += "\n"
+		message += "_Сколько это Джонов Траволт? А вот сколько:_\n"
+		message += "\n"
 		var i int64
 		for i = 0; i < number; i++ {
 			message += "🕺"
 		}
+		message += "\n"
 	}
 	return message
 }
