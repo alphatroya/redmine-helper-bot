@@ -63,7 +63,9 @@ func HandleUpdate(bot BotSender, message string, chatID int64) {
 		if err != nil {
 			bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 		}
-		bot.Send(tgbotapi.NewMessage(chatID, message))
+		telegramMessage := tgbotapi.NewMessage(chatID, message)
+		telegramMessage.ParseMode = "Markdown"
+		bot.Send(telegramMessage)
 	} else {
 		bot.Send(tgbotapi.NewMessage(chatID, UnknownCommandResponse))
 	}

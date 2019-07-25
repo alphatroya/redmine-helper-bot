@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 const (
 	WrongTokenMessageResponse                    = "Неправильное количество аргументов"
@@ -16,5 +19,14 @@ const (
 )
 
 func SuccessFillHoursMessageResponse(issueID string, hours string, host string) string {
-	return fmt.Sprintf("В задачу %s добавлено часов: %s (%s/issues/%s/time_entries)", issueID, hours, host, issueID)
+	message := fmt.Sprintf("В задачу [#%s](%s/issues/%s/time_entries) добавлено часов: *%s*", issueID, host, issueID, hours)
+	number, _ := strconv.ParseInt(hours, 10, 64)
+	if number > 0 {
+		message += " "
+		var i int64
+		for i = 0; i < number; i++ {
+			message += "🕺"
+		}
+	}
+	return message
 }
