@@ -36,5 +36,17 @@ type ClientRequestMock struct {
 }
 
 func (c *ClientRequestMock) Do(req *http.Request) (*http.Response, error) {
-	return &http.Response{}, nil
+	response := &http.Response{}
+	response.Body = &bodyMock{}
+	return response, nil
+}
+
+type bodyMock struct{}
+
+func (b *bodyMock) Read(p []byte) (n int, err error) {
+	return 0, nil
+}
+
+func (b *bodyMock) Close() error {
+	return nil
 }

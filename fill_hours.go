@@ -12,7 +12,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
-func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, client HttpClient) (string, error) {
+func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, client HTTPClient) (string, error) {
 	chatIDString := fmt.Sprint(chatID)
 
 	token, err := redisClient.Get(chatIDString + "_token").Result()
@@ -27,12 +27,12 @@ func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, 
 
 	splitted := strings.Split(message, " ")
 	if len(splitted) < 4 {
-		return "", fmt.Errorf("Неправильное количество аргументов")
+		return "", fmt.Errorf(WrongFillHoursWrongNumberOfArgumentsResponse)
 	}
 
 	regex := regexp.MustCompile(`^[0-9]+$`)
 	if regex.MatchString(splitted[1]) == false {
-		return "", fmt.Errorf(WrongFillHoursWrongIssueIdResponse)
+		return "", fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
 	}
 
 	_, conversionError := strconv.ParseFloat(splitted[2], 32)
@@ -48,7 +48,7 @@ func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, 
 	return resultMessage, nil
 }
 
-func MakeFillHoursRequest(token string, host string, message []string, client HttpClient) (*RequestBody, error) {
+func MakeFillHoursRequest(token string, host string, message []string, client HTTPClient) (*RequestBody, error) {
 	requestBody := new(RequestBody)
 	requestBody.TimeEntry = new(TimeEntry)
 	requestBody.TimeEntry.IssueID = message[1]
@@ -68,9 +68,7 @@ func MakeFillHoursRequest(token string, host string, message []string, client Ht
 	request.Header.Set("X-Redmine-API-Key", token)
 	request.Header.Set("Content-Type", "application/json")
 	response, err := client.Do(request)
-	if response.Body != nil {
-		defer response.Body.Close()
-	}
+	defer response.Body.Close()
 
 	if err != nil {
 		return nil, err
