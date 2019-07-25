@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -29,4 +30,11 @@ func (r *RedisMock) Get(key string) *redis.StringCmd {
 		return redis.NewStringResult("", fmt.Errorf("Storage value is nil"))
 	}
 	return redis.NewStringResult(result, nil)
+}
+
+type ClientRequestMock struct {
+}
+
+func (c *ClientRequestMock) Do(req *http.Request) (*http.Response, error) {
+	return &http.Response{}, nil
 }
