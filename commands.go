@@ -43,12 +43,12 @@ func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, 
 
 	token, err := redisClient.Get(chatIDString + "_token").Result()
 	if err != nil {
-		return "", fmt.Errorf("Токен доступа для текущего пользователя не найден")
+		return "", fmt.Errorf(WrongFillHoursTokenNilResponse)
 	}
 
 	host, err := redisClient.Get(chatIDString + "_host").Result()
 	if err != nil {
-		return "", fmt.Errorf("Адрес сервера не найден")
+		return "", fmt.Errorf(WrongFillHoursHostNilResponse)
 	}
 
 	splitted := strings.Split(message, " ")
