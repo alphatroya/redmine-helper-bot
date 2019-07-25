@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/go-redis/redis"
@@ -34,11 +35,16 @@ func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, 
 		return "", fmt.Errorf(WrongFillHoursWrongIssueIdResponse)
 	}
 
+	_, conversionError := strconv.ParseFloat(splitted[2], 32)
+	if conversionError != nil {
+		return "", fmt.Errorf(WrongFillHoursWrongHoursCountResponse)
+	}
+
 	requestBody, err := MakeFillHoursRequest(token, host, splitted, client)
 	if err != nil {
 		return "", err
 	}
-	resultMessage := fmt.Sprintf(SuccessFillHoursMessageResponse, requestBody.TimeEntry.IssueID, requestBody.TimeEntry.Hours)
+	resultMessage := SuccessFillHoursMessageResponse(requestBody.TimeEntry.IssueID, requestBody.TimeEntry.Hours, host)
 	return resultMessage, nil
 }
 

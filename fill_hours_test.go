@@ -6,21 +6,24 @@ import (
 )
 
 func TestHandleFillHoursSuccessCommand(t *testing.T) {
+	host := "https://test_host.com"
 	tables := []struct {
 		message  string
 		chatID   int64
 		expected string
 	}{
-		{"/fillhours 43212 8 Test", 44, fmt.Sprintf(SuccessFillHoursMessageResponse, "43212", "8")},
+		{"/fillhours 43212 8 Test", 44, SuccessFillHoursMessageResponse("43212", "8", host)},
+		{"/fillhours 51293 8.0 Test", 44, SuccessFillHoursMessageResponse("51293", "8.0", host)},
+		{"/fillhours 51293 9.6 Test", 44, SuccessFillHoursMessageResponse("51293", "9.6", host)},
 	}
 
 	for _, message := range tables {
 		mock := NewRedisMock()
 		mock.Set(fmt.Sprint(message.chatID)+"_token", "TestToken", 0)
-		mock.Set(fmt.Sprint(message.chatID)+"_host", "https://test_host.com", 0)
+		mock.Set(fmt.Sprint(message.chatID)+"_host", host, 0)
 		text, err := HandleFillMessage(message.message, message.chatID, mock, &ClientRequestMock{})
 		if err != nil {
-			t.Errorf("Success function should not return err %s", err)
+			t.Errorf("Success function should not return err %s %s", err, message.message)
 		}
 		if text != message.expected {
 			t.Errorf("Wrong response from fill hours method got %s, expected %s", text, message.expected)
@@ -71,6 +74,9 @@ func TestFillHoursWrongInput(t *testing.T) {
 	}{
 		{"/fillhours aaaa 8 Test", 44, WrongFillHoursWrongIssueIdResponse},
 		{"/fillhours <51293 8 Test", 44, WrongFillHoursWrongIssueIdResponse},
+		{"/fillhours 51293 8a Test", 44, WrongFillHoursWrongHoursCountResponse},
+		{"/fillhours 51293 ff Test", 44, WrongFillHoursWrongHoursCountResponse},
+		{"/fillhours 51293 9,6 Test", 44, WrongFillHoursWrongHoursCountResponse},
 	}
 
 	for _, input := range inputs {
