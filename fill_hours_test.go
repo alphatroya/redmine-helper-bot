@@ -72,11 +72,13 @@ func TestFillHoursWrongInput(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{"/fillhours aaaa 8 Test", 44, WrongFillHoursWrongIssueIdResponse},
-		{"/fillhours <51293 8 Test", 44, WrongFillHoursWrongIssueIdResponse},
+		{"/fillhours aaaa 8 Test", 44, WrongFillHoursWrongIssueIDResponse},
+		{"/fillhours <51293 8 Test", 44, WrongFillHoursWrongIssueIDResponse},
 		{"/fillhours 51293 8a Test", 44, WrongFillHoursWrongHoursCountResponse},
 		{"/fillhours 51293 ff Test", 44, WrongFillHoursWrongHoursCountResponse},
 		{"/fillhours 51293 9,6 Test", 44, WrongFillHoursWrongHoursCountResponse},
+		{"/fillhours 51293", 44, WrongFillHoursWrongNumberOfArgumentsResponse},
+		{"/fillhours 51293 6", 44, WrongFillHoursWrongNumberOfArgumentsResponse},
 	}
 
 	for _, input := range inputs {

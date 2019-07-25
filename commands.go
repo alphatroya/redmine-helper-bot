@@ -10,7 +10,7 @@ import (
 	"github.com/go-redis/redis"
 )
 
-type HttpClient interface {
+type HTTPClient interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
