@@ -70,6 +70,7 @@ func TestFillHoursWrongInput(t *testing.T) {
 		expected string
 	}{
 		{"/fillhours aaaa 8 Test", 44, WrongFillHoursWrongIssueIdResponse},
+		{"/fillhours <51293 8 Test", 44, WrongFillHoursWrongIssueIdResponse},
 	}
 
 	for _, input := range inputs {
