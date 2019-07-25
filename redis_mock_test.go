@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/go-redis/redis"
@@ -23,5 +24,9 @@ func (r *RedisMock) Set(key string, value interface{}, expiration time.Duration)
 }
 
 func (r *RedisMock) Get(key string) *redis.StringCmd {
-	return redis.NewStringResult(r.storage[key], nil)
+	result, ok := r.storage[key]
+	if !ok {
+		return redis.NewStringResult("", fmt.Errorf("Storage value is nil"))
+	}
+	return redis.NewStringResult(result, nil)
 }

@@ -122,10 +122,32 @@ func TestHandleFillHoursSuccessCommand(t *testing.T) {
 
 	for _, message := range tables {
 		mock := NewRedisMock()
-		text, _ := HandleFillMessage(message.message, message.chatID, mock, &ClientRequestMock{})
+		mock.Set(fmt.Sprint(message.chatID)+"_token", "TestToken", 0)
+		mock.Set(fmt.Sprint(message.chatID)+"_host", "https://test_host.com", 0)
+		text, err := HandleFillMessage(message.message, message.chatID, mock, &ClientRequestMock{})
+		if err != nil {
+			t.Errorf("Success function should not return err %s", err)
+		}
 		if text != message.expected {
 			t.Errorf("Wrong response from fill hours method got %s, expected %s", text, message.expected)
 		}
+	}
+}
+
+func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
+	input := struct {
+		message  string
+		chatID   int64
+		expected string
+	}{"/fillhours 43212 8 Test", 44, WrongFillHoursTokenNilResponse}
+
+	mock := NewRedisMock()
+	_, err := HandleFillMessage(input.message, input.chatID, mock, &ClientRequestMock{})
+	if err == nil {
+		t.Errorf("Wrong command should return non-nil err")
+	}
+	if input.expected != err.Error() {
+		t.Errorf("Wrong response from fill hours method got %s, expected %s", err.Error(), input.expected)
 	}
 }
 
