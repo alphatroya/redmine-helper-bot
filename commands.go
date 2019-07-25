@@ -48,7 +48,7 @@ func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, 
 
 	host, err := redisClient.Get(chatIDString + "_host").Result()
 	if err != nil {
-		return "", fmt.Errorf("Адрес сервера не найден")
+		return "", fmt.Errorf(WrongFillHoursHostNilResponse)
 	}
 
 	splitted := strings.Split(message, " ")

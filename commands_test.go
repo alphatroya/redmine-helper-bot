@@ -151,6 +151,24 @@ func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
 	}
 }
 
+func TestHandleFillHoursNilHostFailCommand(t *testing.T) {
+	input := struct {
+		message  string
+		chatID   int64
+		expected string
+	}{"/fillhours 43212 8 Test", 44, WrongFillHoursHostNilResponse}
+
+	mock := NewRedisMock()
+	mock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
+	_, err := HandleFillMessage(input.message, input.chatID, mock, &ClientRequestMock{})
+	if err == nil {
+		t.Errorf("Wrong command should return non-nil err")
+	}
+	if input.expected != err.Error() {
+		t.Errorf("Wrong response from fill hours method got %s, expected %s", err.Error(), input.expected)
+	}
+}
+
 type ClientRequestMock struct {
 }
 
