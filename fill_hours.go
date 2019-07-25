@@ -29,7 +29,7 @@ func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, 
 		return "", fmt.Errorf("Неправильное количество аргументов")
 	}
 
-	regex := regexp.MustCompile(`[0-9]+`)
+	regex := regexp.MustCompile(`^[0-9]+$`)
 	if regex.MatchString(splitted[1]) == false {
 		return "", fmt.Errorf(WrongFillHoursWrongIssueIdResponse)
 	}
