@@ -33,10 +33,16 @@ func (r *RedisMock) Get(key string) *redis.StringCmd {
 }
 
 type ClientRequestMock struct {
+	statusCode int
 }
 
 func (c *ClientRequestMock) Do(req *http.Request) (*http.Response, error) {
 	response := &http.Response{}
+	if c.statusCode != 0 {
+		response.StatusCode = c.statusCode
+	} else {
+		response.StatusCode = 200
+	}
 	response.Body = &bodyMock{}
 	return response, nil
 }

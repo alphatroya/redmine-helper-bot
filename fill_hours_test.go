@@ -94,3 +94,26 @@ func TestFillHoursWrongInput(t *testing.T) {
 		}
 	}
 }
+
+func TestFillHoursWrongRsponse(t *testing.T) {
+	inputs := []struct {
+		message  string
+		chatID   int64
+		expected string
+	}{
+		{"/fillhours 51293 8 Test", 44, fmt.Sprintf(WrongFillHoursWrongStatusCodeResponse, 400, "Bad Request")},
+	}
+
+	for _, input := range inputs {
+		mock := NewRedisMock()
+		mock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
+		mock.Set(fmt.Sprint(input.chatID)+"_host", "https://test_host.com", 0)
+		_, err := HandleFillMessage(input.message, input.chatID, mock, &ClientRequestMock{400})
+		if err == nil {
+			t.Errorf("Bad response status code should produce error")
+		}
+		if input.expected != err.Error() {
+			t.Errorf("Wrong response from fill hours method got %s, expected %s", err.Error(), input.expected)
+		}
+	}
+}
