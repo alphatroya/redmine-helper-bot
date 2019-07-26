@@ -70,6 +70,10 @@ func MakeFillHoursRequest(token string, host string, message []string, client HT
 	response, err := client.Do(request)
 	defer response.Body.Close()
 
+	if response.StatusCode >= 400 {
+		return nil, fmt.Errorf("Wrong response from redmine server %d - %s", response.StatusCode, http.StatusText(response.StatusCode))
+	}
+
 	if err != nil {
 		return nil, err
 	}
