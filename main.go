@@ -10,10 +10,8 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
-var redisClient *redis.Client
-
 func main() {
-	redisClient = redis.NewClient(&redis.Options{
+	redisClient := redis.NewClient(&redis.Options{
 		Addr:     "redis:6379",
 		Password: os.Getenv("REDIS_PASSWORD"),
 		DB:       0,
@@ -45,11 +43,11 @@ func main() {
 		if update.Message == nil {
 			continue
 		}
-		HandleUpdate(bot, update.Message.Text, update.Message.Chat.ID)
+		HandleUpdate(bot, update.Message.Text, update.Message.Chat.ID, redisClient)
 	}
 }
 
-func HandleUpdate(bot BotSender, message string, chatID int64) {
+func HandleUpdate(bot BotSender, message string, chatID int64, redisClient redis.Cmdable) {
 	if strings.HasPrefix(message, "/token") {
 		bot.Send(tgbotapi.NewMessage(chatID, HandleTokenMessage(message, redisClient, chatID)))
 	} else if strings.HasPrefix(message, "/host") {

@@ -7,11 +7,24 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+func TestTokenRequest(t *testing.T) {
+	token := "token"
+	message := "/token " + token
+	var chatID int64 = 1
+	mock := &MockBotSender{}
+	redisMock := NewRedisMock()
+	HandleUpdate(mock, message, chatID, redisMock)
+	if mock.text != SuccessTokenMessageResponse {
+		t.Errorf("Wrong response expected %s received %s", UnknownCommandResponse, mock.text)
+	}
+}
+
 func TestUnknownMessage(t *testing.T) {
 	message := "qwertyu"
 	var chatID int64 = 1
 	mock := &MockBotSender{}
-	HandleUpdate(mock, message, chatID)
+	redisMock := NewRedisMock()
+	HandleUpdate(mock, message, chatID, redisMock)
 	if mock.text != UnknownCommandResponse {
 		t.Errorf("Wrong response expected %s received %s", UnknownCommandResponse, mock.text)
 	}
