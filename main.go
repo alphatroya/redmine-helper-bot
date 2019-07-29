@@ -2,9 +2,7 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
-	"strings"
 
 	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -45,30 +43,4 @@ func main() {
 		}
 		HandleUpdate(bot, update.Message.Text, update.Message.Chat.ID, redisClient)
 	}
-}
-
-func HandleUpdate(bot BotSender, message string, chatID int64, redisClient redis.Cmdable) {
-	if strings.HasPrefix(message, "/token") {
-		bot.Send(tgbotapi.NewMessage(chatID, HandleTokenMessage(message, redisClient, chatID)))
-	} else if strings.HasPrefix(message, "/host") {
-		message, err := HandleHostMessage(message, redisClient, chatID)
-		if err != nil {
-			bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
-		}
-		bot.Send(tgbotapi.NewMessage(chatID, message))
-	} else if strings.HasPrefix(message, "/fillhours") {
-		message, err := HandleFillMessage(message, chatID, redisClient, &http.Client{})
-		if err != nil {
-			bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
-		}
-		telegramMessage := tgbotapi.NewMessage(chatID, message)
-		telegramMessage.ParseMode = "Markdown"
-		bot.Send(telegramMessage)
-	} else {
-		bot.Send(tgbotapi.NewMessage(chatID, UnknownCommandResponse))
-	}
-}
-
-type BotSender interface {
-	Send(c tgbotapi.Chattable) (tgbotapi.Message, error)
 }

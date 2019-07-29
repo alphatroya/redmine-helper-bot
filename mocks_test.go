@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-redis/redis"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type RedisMock struct {
@@ -55,4 +56,15 @@ func (b *bodyMock) Read(p []byte) (n int, err error) {
 
 func (b *bodyMock) Close() error {
 	return nil
+}
+
+type MockBotSender struct {
+	text string
+}
+
+func (t *MockBotSender) Send(c tgbotapi.Chattable) (tgbotapi.Message, error) {
+	if config, ok := c.(tgbotapi.MessageConfig); ok == true {
+		t.text = config.Text
+	}
+	return tgbotapi.Message{}, nil
 }
