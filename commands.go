@@ -18,7 +18,7 @@ type BotSender interface {
 	Send(c tgbotapi.Chattable) (tgbotapi.Message, error)
 }
 
-func HandleUpdate(bot BotSender, message string, chatID int64, redisClient redis.Cmdable) {
+func HandleUpdate(bot BotSender, message string, chatID int64, redisClient redis.Cmdable, client HTTPClient) {
 	if strings.HasPrefix(message, "/token") {
 		bot.Send(tgbotapi.NewMessage(chatID, handleTokenMessage(message, redisClient, chatID)))
 	} else if strings.HasPrefix(message, "/host") {
@@ -29,7 +29,7 @@ func HandleUpdate(bot BotSender, message string, chatID int64, redisClient redis
 			bot.Send(tgbotapi.NewMessage(chatID, message))
 		}
 	} else if strings.HasPrefix(message, "/fillhours") {
-		message, err := HandleFillMessage(message, chatID, redisClient, &http.Client{})
+		message, err := HandleFillMessage(message, chatID, redisClient, client)
 		if err != nil {
 			bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
 		} else {

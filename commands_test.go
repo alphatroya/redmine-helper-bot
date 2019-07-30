@@ -24,7 +24,7 @@ func TestTokenRequest(t *testing.T) {
 	for _, message := range data {
 		mock := &MockBotSender{}
 		redisMock := NewRedisMock()
-		HandleUpdate(mock, message.command, message.chatID, redisMock)
+		HandleUpdate(mock, message.command, message.chatID, redisMock, &ClientRequestMock{})
 		if mock.text != message.expected {
 			t.Errorf("Wrong response expected: %s received: %s", message.expected, mock.text)
 		}
@@ -43,7 +43,7 @@ func TestStorageTokenData(t *testing.T) {
 	for _, message := range data {
 		botMock := &MockBotSender{}
 		redisMock := NewRedisMock()
-		HandleUpdate(botMock, "/token "+message.command, message.chatID, redisMock)
+		HandleUpdate(botMock, "/token "+message.command, message.chatID, redisMock, &ClientRequestMock{})
 		tokenValue := redisMock.Get(fmt.Sprint(message.chatID) + "_token").Val()
 		if tokenValue != message.command {
 			t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, message.command)
@@ -61,8 +61,8 @@ func TestMultipleRequestStorageTokenData(t *testing.T) {
 	redisMock := NewRedisMock()
 	botMock := &MockBotSender{}
 
-	HandleUpdate(botMock, "/token "+command, chatID, redisMock)
-	HandleUpdate(botMock, "/token "+command2, chatID2, redisMock)
+	HandleUpdate(botMock, "/token "+command, chatID, redisMock, &ClientRequestMock{})
+	HandleUpdate(botMock, "/token "+command2, chatID2, redisMock, &ClientRequestMock{})
 
 	tokenValue := redisMock.Get(fmt.Sprint(chatID2) + "_token").Val()
 	if tokenValue != command2 {
@@ -83,7 +83,7 @@ func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
 	for _, message := range data {
 		botMock := &MockBotSender{}
 		redisMock := NewRedisMock()
-		HandleUpdate(botMock, "/host"+" "+message.url, message.chatID, redisMock)
+		HandleUpdate(botMock, "/host"+" "+message.url, message.chatID, redisMock, &ClientRequestMock{})
 		hostValue := redisMock.Get(fmt.Sprint(message.chatID) + "_host").Val()
 		if hostValue != message.url {
 			t.Errorf("Wrong saved host value %s is not %s", hostValue, message.url)
