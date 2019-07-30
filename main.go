@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/go-redis/redis"
@@ -41,6 +42,6 @@ func main() {
 		if update.Message == nil {
 			continue
 		}
-		HandleUpdate(bot, update.Message.Text, update.Message.Chat.ID, redisClient)
+		HandleUpdate(bot, update.Message.Text, update.Message.Chat.ID, redisClient, &http.Client{})
 	}
 }
