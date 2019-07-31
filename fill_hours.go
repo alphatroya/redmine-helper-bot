@@ -28,7 +28,7 @@ func HandleFillMessage(message string, chatID int64, redisClient redis.Cmdable, 
 	}
 
 	regex := regexp.MustCompile(`^[0-9]+$`)
-	if regex.MatchString(splitted[1]) == false {
+	if !regex.MatchString(splitted[1]) {
 		return "", fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
 	}
 
