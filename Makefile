@@ -1,10 +1,10 @@
 GO_BIN := $(GOPATH)/bin
 GOIMPORTS := $(GO_BIN)/goimports
-GOLINT := $(GO_BIN)/golint
+GOLINT := $(GO_BIN)/golangci-lint
 
 all: install
 
-install: bootstrap fmt lint
+install: bootstrap fmt
 	go install -v
 
 test: bootstrap fmt
@@ -14,7 +14,7 @@ bootstrap:
 	go get ./...
 
 lint: $(GOLINT)
-	golint *.go
+	golangci-lint run
 
 fmt: $(GOIMPORTS)
 	goimports -w *.go
@@ -23,6 +23,6 @@ $(GOIMPORTS):
 	go get -u golang.org/x/tools/cmd/goimports
 
 $(GOLINT):
-	go get -u golang.org/x/lint/golint
+	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 
 .PHONY: install test fmt lint bootstrap
