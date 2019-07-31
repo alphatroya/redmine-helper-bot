@@ -4,11 +4,14 @@ GOLINT := $(GO_BIN)/golint
 
 all: install
 
-install: fmt lint
+install: bootstrap fmt lint
 	go install -v
 
-test: fmt
+test: bootstrap fmt
 	go test ./... -v
+
+bootstrap:
+	go get ./...
 
 lint: $(GOLINT)
 	golint *.go
@@ -22,4 +25,4 @@ $(GOIMPORTS):
 $(GOLINT):
 	go get -u golang.org/x/lint/golint
 
-.PHONY: install test fmt lint
+.PHONY: install test fmt lint bootstrap
