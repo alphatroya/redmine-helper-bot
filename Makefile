@@ -10,6 +10,9 @@ install: bootstrap fmt
 test: bootstrap fmt
 	go test ./... -v
 
+coverage: bootstrap fmt
+	go test -v -race -coverprofile=coverage.txt -covermode=atomic
+
 bootstrap:
 	go get ./...
 
