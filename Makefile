@@ -7,10 +7,10 @@ all: install
 install: bootstrap fmt
 	go install -v
 
-test: bootstrap fmt
+test: bootstrap
 	go test ./... -v
 
-coverage: bootstrap fmt
+coverage: bootstrap
 	go test -v -race -coverprofile=coverage.txt -covermode=atomic
 
 bootstrap:
