@@ -1,4 +1,4 @@
-package main
+package redmine
 
 import (
 	"bytes"
@@ -19,11 +19,13 @@ type TimeEntry struct {
 }
 
 func FillHoursRequest(token string, host string, message []string, client HTTPClient) (*RequestBody, error) {
-	requestBody := new(RequestBody)
-	requestBody.TimeEntry = new(TimeEntry)
-	requestBody.TimeEntry.IssueID = message[1]
-	requestBody.TimeEntry.Comments = strings.Join(message[3:], " ")
-	requestBody.TimeEntry.Hours = message[2]
+	requestBody := &RequestBody{
+		&TimeEntry{
+			message[1],
+			message[2],
+			strings.Join(message[3:], " "),
+		},
+	}
 
 	json, err := json.Marshal(requestBody)
 	if err != nil {

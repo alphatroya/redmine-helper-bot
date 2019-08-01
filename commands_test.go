@@ -5,6 +5,32 @@ import (
 	"testing"
 )
 
+func setupSubTest(t *testing.T) func(t *testing.T) {
+	setup()
+	return func(t *testing.T) {
+		tearDown()
+	}
+}
+
+var botMock *MockBotSender
+var redisMock *RedisMock
+var clientMock *ClientRequestMock
+var handler *UpdateHandler
+
+func setup() {
+	botMock = &MockBotSender{}
+	redisMock = NewRedisMock()
+	clientMock = &ClientRequestMock{}
+	handler = &UpdateHandler{botMock, redisMock, clientMock}
+}
+
+func tearDown() {
+	botMock = nil
+	redisMock = nil
+	clientMock = nil
+	handler = nil
+}
+
 func TestTokenRequest(t *testing.T) {
 	data := []struct {
 		command  string
@@ -22,11 +48,12 @@ func TestTokenRequest(t *testing.T) {
 	}
 
 	for _, message := range data {
-		mock := &MockBotSender{}
-		redisMock := NewRedisMock()
-		HandleUpdate(mock, message.command, message.chatID, redisMock, &ClientRequestMock{})
-		if mock.text != message.expected {
-			t.Errorf("Wrong response expected: %s received: %s", message.expected, mock.text)
+		teardownSubTest := setupSubTest(t)
+		defer teardownSubTest(t)
+
+		handler.Handle(message.command, message.chatID)
+		if botMock.text != message.expected {
+			t.Errorf("Wrong response expected: %s received: %s", message.expected, botMock.text)
 		}
 	}
 }
@@ -41,9 +68,10 @@ func TestStorageTokenData(t *testing.T) {
 	}
 
 	for _, message := range data {
-		botMock := &MockBotSender{}
-		redisMock := NewRedisMock()
-		HandleUpdate(botMock, "/token "+message.command, message.chatID, redisMock, &ClientRequestMock{})
+		teardownSubTest := setupSubTest(t)
+		defer teardownSubTest(t)
+
+		handler.Handle("/token "+message.command, message.chatID)
 		tokenValue := redisMock.Get(fmt.Sprint(message.chatID) + "_token").Val()
 		if tokenValue != message.command {
 			t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, message.command)
@@ -52,17 +80,17 @@ func TestStorageTokenData(t *testing.T) {
 }
 
 func TestMultipleRequestStorageTokenData(t *testing.T) {
+	teardownSubTest := setupSubTest(t)
+	defer teardownSubTest(t)
+
 	command := "4433"
 	var chatID int64 = 1
 
 	command2 := "4433"
 	var chatID2 int64 = 2
 
-	redisMock := NewRedisMock()
-	botMock := &MockBotSender{}
-
-	HandleUpdate(botMock, "/token "+command, chatID, redisMock, &ClientRequestMock{})
-	HandleUpdate(botMock, "/token "+command2, chatID2, redisMock, &ClientRequestMock{})
+	handler.Handle("/token "+command, chatID)
+	handler.Handle("/token "+command2, chatID2)
 
 	tokenValue := redisMock.Get(fmt.Sprint(chatID2) + "_token").Val()
 	if tokenValue != command2 {
@@ -71,6 +99,9 @@ func TestMultipleRequestStorageTokenData(t *testing.T) {
 }
 
 func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
+	teardownSubTest := setupSubTest(t)
+	defer teardownSubTest(t)
+
 	data := []struct {
 		url    string
 		chatID int64
@@ -81,12 +112,118 @@ func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
 	}
 
 	for _, message := range data {
-		botMock := &MockBotSender{}
-		redisMock := NewRedisMock()
-		HandleUpdate(botMock, "/host"+" "+message.url, message.chatID, redisMock, &ClientRequestMock{})
+		handler.Handle("/host"+" "+message.url, message.chatID)
 		hostValue := redisMock.Get(fmt.Sprint(message.chatID) + "_host").Val()
 		if hostValue != message.url {
 			t.Errorf("Wrong saved host value %s is not %s", hostValue, message.url)
+		}
+	}
+}
+
+func TestHandleFillHoursSuccessCommand(t *testing.T) {
+	host := "https://test_host.com"
+	tables := []struct {
+		message  string
+		chatID   int64
+		expected string
+	}{
+		{"/fillhours 43212 8 Test", 44, SuccessFillHoursMessageResponse("43212", "8", host)},
+		{"/fillhours 51293 8.0 Test", 44, SuccessFillHoursMessageResponse("51293", "8.0", host)},
+		{"/fillhours 51293 9.6 Test", 44, SuccessFillHoursMessageResponse("51293", "9.6", host)},
+	}
+
+	for _, message := range tables {
+		teardownSubTest := setupSubTest(t)
+		defer teardownSubTest(t)
+		redisMock.Set(fmt.Sprint(message.chatID)+"_token", "Test_TOKEN", 0)
+		redisMock.Set(fmt.Sprint(message.chatID)+"_host", host, 0)
+		handler.Handle(message.message, message.chatID)
+		if botMock.text != message.expected {
+			t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, message.expected)
+		}
+	}
+}
+
+func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
+	teardownSubTest := setupSubTest(t)
+	defer teardownSubTest(t)
+
+	input := struct {
+		message  string
+		chatID   int64
+		expected string
+	}{"/fillhours 43212 8 Test", 44, WrongFillHoursTokenNilResponse}
+
+	handler.Handle(input.message, input.chatID)
+	if input.expected != botMock.text {
+		t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
+	}
+}
+
+func TestHandleFillHoursNilHostFailCommand(t *testing.T) {
+	teardownSubTest := setupSubTest(t)
+	defer teardownSubTest(t)
+
+	input := struct {
+		message  string
+		chatID   int64
+		expected string
+	}{"/fillhours 43212 8 Test", 44, WrongFillHoursHostNilResponse}
+
+	redisMock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
+	handler.Handle(input.message, input.chatID)
+	if input.expected != botMock.text {
+		t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
+	}
+}
+
+func TestFillHoursWrongInput(t *testing.T) {
+	inputs := []struct {
+		message  string
+		chatID   int64
+		expected string
+	}{
+		{"/fillhours aaaa 8 Test", 44, WrongFillHoursWrongIssueIDResponse},
+		{"/fillhours <51293 8 Test", 44, WrongFillHoursWrongIssueIDResponse},
+		{"/fillhours 51293 8a Test", 44, WrongFillHoursWrongHoursCountResponse},
+		{"/fillhours 51293 ff Test", 44, WrongFillHoursWrongHoursCountResponse},
+		{"/fillhours 51293 9,6 Test", 44, WrongFillHoursWrongHoursCountResponse},
+		{"/fillhours 51293", 44, WrongFillHoursWrongNumberOfArgumentsResponse},
+		{"/fillhours 51293 6", 44, WrongFillHoursWrongNumberOfArgumentsResponse},
+	}
+
+	for _, input := range inputs {
+		teardownSubTest := setupSubTest(t)
+		defer teardownSubTest(t)
+
+		redisMock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
+		redisMock.Set(fmt.Sprint(input.chatID)+"_host", "https://test_host.com", 0)
+		handler.Handle(input.message, input.chatID)
+		if input.expected != botMock.text {
+			t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
+		}
+	}
+}
+
+func TestFillHoursWrongRsponse(t *testing.T) {
+	inputs := []struct {
+		message  string
+		chatID   int64
+		expected string
+	}{
+		{"/fillhours 51293 8 Test", 44, fmt.Sprintf(WrongFillHoursWrongStatusCodeResponse, 400, "Bad Request")},
+	}
+
+	for _, input := range inputs {
+		teardownSubTest := setupSubTest(t)
+		defer teardownSubTest(t)
+
+		redisMock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
+		redisMock.Set(fmt.Sprint(input.chatID)+"_host", "https://test_host.com", 0)
+		handler = &UpdateHandler{botMock, redisMock, &ClientRequestMock{400}}
+		handler.Handle(input.message, input.chatID)
+		if input.expected != botMock.text {
+			t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
 		}
 	}
 }
