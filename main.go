@@ -38,10 +38,11 @@ func main() {
 		log.Panic(err)
 	}
 
+	handler := UpdateHandler{bot, redisClient, &http.Client{}}
 	for update := range updates {
 		if update.Message == nil {
 			continue
 		}
-		HandleUpdate(bot, update.Message.Text, update.Message.Chat.ID, redisClient, &http.Client{})
+		handler.Handle(update.Message.Text, update.Message.Chat.ID)
 	}
 }
