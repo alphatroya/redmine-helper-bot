@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -38,7 +39,9 @@ func main() {
 		log.Panic(err)
 	}
 
-	handler := UpdateHandler{bot, redisClient, &http.Client{}}
+	redmine := redmine.NewRedmineClient(&http.Client{})
+
+	handler := UpdateHandler{bot, redisClient, redmine}
 	for update := range updates {
 		if update.Message == nil {
 			continue

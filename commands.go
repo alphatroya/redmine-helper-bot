@@ -19,7 +19,7 @@ type BotSender interface {
 type UpdateHandler struct {
 	bot         BotSender
 	redisClient redis.Cmdable
-	client      redmine.HTTPClient
+	client      redmine.Redmine
 }
 
 func (t *UpdateHandler) Handle(message string, chatID int64) {
@@ -68,18 +68,20 @@ func (t *UpdateHandler) handleHostMessage(message string, redisClient redis.Cmda
 	return SuccessHostMessageResponse, nil
 }
 
-func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisClient redis.Cmdable, client redmine.HTTPClient) (string, error) {
+func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisClient redis.Cmdable, client redmine.Redmine) (string, error) {
 	chatIDString := fmt.Sprint(chatID)
 
 	token, err := redisClient.Get(chatIDString + "_token").Result()
 	if err != nil {
 		return "", fmt.Errorf(WrongFillHoursTokenNilResponse)
 	}
+	client.SetToken(token)
 
 	host, err := redisClient.Get(chatIDString + "_host").Result()
 	if err != nil {
 		return "", fmt.Errorf(WrongFillHoursHostNilResponse)
 	}
+	client.SetHost(host)
 
 	splitted := strings.Split(message, " ")
 	if len(splitted) < 4 {
@@ -96,7 +98,7 @@ func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisCli
 		return "", fmt.Errorf(WrongFillHoursWrongHoursCountResponse)
 	}
 
-	requestBody, err := redmine.FillHoursRequest(token, host, splitted, client)
+	requestBody, err := client.FillHoursRequest(splitted)
 	if err != nil {
 		return "", err
 	}

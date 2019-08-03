@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
@@ -31,6 +32,29 @@ func (r *RedisMock) Get(key string) *redis.StringCmd {
 		return redis.NewStringResult("", fmt.Errorf("Storage value is nil"))
 	}
 	return redis.NewStringResult(result, nil)
+}
+
+type RedmineClientMock struct {
+	host          string
+	token         string
+	response      interface{}
+	responseError error
+}
+
+func (r *RedmineClientMock) SetToken(token string) {
+	r.token = token
+}
+
+func (r *RedmineClientMock) SetHost(host string) {
+	r.host = host
+}
+
+func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.RequestBody, responseError error) {
+	r.response, r.responseError = body, responseError
+}
+
+func (r *RedmineClientMock) FillHoursRequest(message []string) (*redmine.RequestBody, error) {
+	return r.response.(*redmine.RequestBody), r.responseError
 }
 
 type ClientRequestMock struct {
