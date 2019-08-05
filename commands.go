@@ -89,7 +89,8 @@ func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisCli
 	}
 
 	regex := regexp.MustCompile(`^[0-9]+$`)
-	if !regex.MatchString(splitted[1]) {
+	issueID := splitted[1]
+	if !regex.MatchString(issueID) {
 		return "", fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
 	}
 
@@ -98,9 +99,12 @@ func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisCli
 		return "", fmt.Errorf(WrongFillHoursWrongHoursCountResponse)
 	}
 
-	requestBody, err := client.FillHoursRequest(splitted[1], splitted[2], strings.Join(splitted[3:], " "))
+	requestBody, err := client.FillHoursRequest(issueID, splitted[2], strings.Join(splitted[3:], " "))
 	if err != nil {
 		return "", err
 	}
-	return SuccessFillHoursMessageResponse(requestBody.TimeEntry.IssueID, requestBody.TimeEntry.Hours, host), nil
+
+	issue, _ := client.Issue(issueID)
+
+	return SuccessFillHoursMessageResponse(requestBody.TimeEntry.IssueID, issue, requestBody.TimeEntry.Hours, host), nil
 }

@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"strconv"
+
+	"github.com/alphatroya/redmine-helper-bot/redmine"
 )
 
 const (
@@ -19,8 +21,14 @@ const (
 	UnknownCommandResponse                       = "Введена неправильная команда"
 )
 
-func SuccessFillHoursMessageResponse(issueID string, hours string, host string) string {
+func SuccessFillHoursMessageResponse(issueID string, issue *redmine.Issue, hours string, host string) string {
 	message := fmt.Sprintf("В задачу [#%s](%s/issues/%s/time_entries) добавлено часов: *%s*\n", issueID, host, issueID, hours)
+	if issue != nil {
+		message += "\n"
+		message += fmt.Sprintf("Задача #%d", issue.Issue.ID)
+		message += "\n"
+	}
+
 	number, _ := strconv.ParseInt(hours, 10, 64)
 	if number > 0 {
 		message += "\n"
