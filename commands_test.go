@@ -139,7 +139,7 @@ func TestHandleFillHoursSuccessCommand(t *testing.T) {
 	for _, message := range tables {
 		teardownSubTest := setupSubTest(t)
 		defer teardownSubTest(t)
-		redmineBody := &redmine.RequestBody{
+		redmineBody := &redmine.TimeEntryBody{
 			&redmine.TimeEntry{
 				message.issue,
 				message.hours,
@@ -238,7 +238,7 @@ func TestFillHoursWrongResponse(t *testing.T) {
 
 		redisMock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
 		redisMock.Set(fmt.Sprint(input.chatID)+"_host", "https://test_host.com", 0)
-		redmineMock.SetFillHoursResponse(&redmine.RequestBody{nil}, redmine.WrongRedmineStatusCodeError(400, "Bad Request"))
+		redmineMock.SetFillHoursResponse(&redmine.TimeEntryBody{nil}, redmine.WrongRedmineStatusCodeError(400, "Bad Request"))
 		handler = &UpdateHandler{botMock, redisMock, redmineMock}
 		handler.Handle(input.message, input.chatID)
 		if input.expected != botMock.text {

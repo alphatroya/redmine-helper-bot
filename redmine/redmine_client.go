@@ -11,7 +11,7 @@ import (
 type Redmine interface {
 	SetToken(token string)
 	SetHost(host string)
-	FillHoursRequest(issueID string, hours string, comment string) (*RequestBody, error)
+	FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBody, error)
 	Issue(issueID string) (*Issue, error)
 }
 
@@ -66,8 +66,8 @@ func (t *RedmineClient) Issue(issueID string) (*Issue, error) {
 	return issue, nil
 }
 
-func (t *RedmineClient) FillHoursRequest(issueID string, hours string, comment string) (*RequestBody, error) {
-	requestBody := &RequestBody{
+func (t *RedmineClient) FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBody, error) {
+	requestBody := &TimeEntryBody{
 		&TimeEntry{
 			issueID,
 			hours,

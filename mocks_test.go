@@ -48,7 +48,7 @@ func (r *RedmineClientMock) SetHost(host string) {
 	r.host = host
 }
 
-func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.RequestBody, responseError error) {
+func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.TimeEntryBody, responseError error) {
 	r.response, r.responseError = body, responseError
 }
 
@@ -56,8 +56,8 @@ func (r *RedmineClientMock) Issue(issueID string) (*redmine.Issue, error) {
 	return nil, r.responseError
 }
 
-func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string) (*redmine.RequestBody, error) {
-	return r.response.(*redmine.RequestBody), r.responseError
+func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string) (*redmine.TimeEntryBody, error) {
+	return r.response.(*redmine.TimeEntryBody), r.responseError
 }
 
 type MockBotSender struct {
