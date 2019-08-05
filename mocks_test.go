@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
@@ -55,31 +54,6 @@ func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.RequestBody, resp
 
 func (r *RedmineClientMock) FillHoursRequest(message []string) (*redmine.RequestBody, error) {
 	return r.response.(*redmine.RequestBody), r.responseError
-}
-
-type ClientRequestMock struct {
-	statusCode int
-}
-
-func (c *ClientRequestMock) Do(req *http.Request) (*http.Response, error) {
-	response := &http.Response{}
-	if c.statusCode != 0 {
-		response.StatusCode = c.statusCode
-	} else {
-		response.StatusCode = 200
-	}
-	response.Body = &bodyMock{}
-	return response, nil
-}
-
-type bodyMock struct{}
-
-func (b *bodyMock) Read(p []byte) (n int, err error) {
-	return 0, nil
-}
-
-func (b *bodyMock) Close() error {
-	return nil
 }
 
 type MockBotSender struct {
