@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 )
 
 type Redmine interface {
 	SetToken(token string)
 	SetHost(host string)
-	FillHoursRequest(message []string) (*RequestBody, error)
+	FillHoursRequest(issueID string, hours string, comment string) (*RequestBody, error)
 }
 
 func NewRedmineClient(client HTTPClient) *RedmineClient {
@@ -36,12 +35,12 @@ func (r *RedmineClient) SetHost(host string) {
 	r.host = host
 }
 
-func (t *RedmineClient) FillHoursRequest(message []string) (*RequestBody, error) {
+func (t *RedmineClient) FillHoursRequest(issueID string, hours string, comment string) (*RequestBody, error) {
 	requestBody := &RequestBody{
 		&TimeEntry{
-			message[1],
-			message[2],
-			strings.Join(message[3:], " "),
+			issueID,
+			hours,
+			comment,
 		},
 	}
 

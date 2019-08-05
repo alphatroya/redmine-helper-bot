@@ -98,7 +98,7 @@ func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisCli
 		return "", fmt.Errorf(WrongFillHoursWrongHoursCountResponse)
 	}
 
-	requestBody, err := client.FillHoursRequest(splitted)
+	requestBody, err := client.FillHoursRequest(splitted[1], splitted[2], strings.Join(splitted[3:], " "))
 	if err != nil {
 		return "", err
 	}

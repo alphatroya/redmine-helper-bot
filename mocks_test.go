@@ -52,7 +52,7 @@ func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.RequestBody, resp
 	r.response, r.responseError = body, responseError
 }
 
-func (r *RedmineClientMock) FillHoursRequest(message []string) (*redmine.RequestBody, error) {
+func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string) (*redmine.RequestBody, error) {
 	return r.response.(*redmine.RequestBody), r.responseError
 }
 
