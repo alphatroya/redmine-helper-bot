@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
-	tgbotapi "github.com/alphatroya/telegram-bot-api"
 	"github.com/go-redis/redis"
+	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type BotSender interface {
