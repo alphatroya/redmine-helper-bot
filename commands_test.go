@@ -131,9 +131,9 @@ func TestHandleFillHoursSuccessCommand(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{"43212", "8", "Test", 44, SuccessFillHoursMessageResponse("43212", "8", host)},
-		{"51293", "8.0", "Test", 44, SuccessFillHoursMessageResponse("51293", "8.0", host)},
-		{"51293", "9.6", "Test", 44, SuccessFillHoursMessageResponse("51293", "9.6", host)},
+		{"43212", "8", "Test", 44, SuccessFillHoursMessageResponse("43212", nil, "8", host)},
+		{"51293", "8.0", "Test", 44, SuccessFillHoursMessageResponse("51293", nil, "8.0", host)},
+		{"51293", "9.6", "Test", 44, SuccessFillHoursMessageResponse("51293", nil, "9.6", host)},
 	}
 
 	for _, message := range tables {

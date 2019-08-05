@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
+	tgbotapi "github.com/alphatroya/telegram-bot-api"
 	"github.com/go-redis/redis"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type RedisMock struct {
@@ -50,6 +50,10 @@ func (r *RedmineClientMock) SetHost(host string) {
 
 func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.RequestBody, responseError error) {
 	r.response, r.responseError = body, responseError
+}
+
+func (r *RedmineClientMock) Issue(issueID string) (*redmine.Issue, error) {
+	return nil, r.responseError
 }
 
 func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string) (*redmine.RequestBody, error) {
