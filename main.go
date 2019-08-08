@@ -39,7 +39,7 @@ func main() {
 		log.Fatal(err)
 	}
 	if info.LastErrorDate != 0 {
-		log.Printf("Telegram callback failed: %s", info.LastErrorMessage)
+		log.Printf("Telegram callback failed: %v", info)
 	}
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	go http.ListenAndServe("0.0.0.0:5000", nil)
