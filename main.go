@@ -52,9 +52,6 @@ func main() {
 		if update.Message == nil {
 			continue
 		}
-		if !update.Message.IsCommand() {
-			continue
-		}
 		handler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
 	}
 }
