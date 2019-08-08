@@ -7,8 +7,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/alphatroya/redmine-helper-bot/storage"
+
 	"github.com/alphatroya/redmine-helper-bot/redmine"
-	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -18,8 +19,8 @@ type BotSender interface {
 
 type UpdateHandler struct {
 	bot         BotSender
-	redisClient redis.Cmdable
-	client      redmine.Redmine
+	redisClient storage.Manager
+	client      redmine.Client
 }
 
 func (t *UpdateHandler) Handle(message string, chatID int64) {
@@ -46,7 +47,7 @@ func (t *UpdateHandler) Handle(message string, chatID int64) {
 	}
 }
 
-func (t *UpdateHandler) handleTokenMessage(message string, redisClient redis.Cmdable, chatID int64) string {
+func (t *UpdateHandler) handleTokenMessage(message string, redisClient storage.Manager, chatID int64) string {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) != 2 {
 		return WrongTokenMessageResponse
@@ -55,7 +56,7 @@ func (t *UpdateHandler) handleTokenMessage(message string, redisClient redis.Cmd
 	return SuccessTokenMessageResponse
 }
 
-func (t *UpdateHandler) handleHostMessage(message string, redisClient redis.Cmdable, chatID int64) (string, error) {
+func (t *UpdateHandler) handleHostMessage(message string, redisClient storage.Manager, chatID int64) (string, error) {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) != 2 {
 		return "", fmt.Errorf(WrongHostMessageResponse)
@@ -68,7 +69,7 @@ func (t *UpdateHandler) handleHostMessage(message string, redisClient redis.Cmda
 	return SuccessHostMessageResponse, nil
 }
 
-func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisClient redis.Cmdable, client redmine.Redmine) (string, error) {
+func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisClient storage.Manager, client redmine.Client) (string, error) {
 	chatIDString := fmt.Sprint(chatID)
 
 	token, err := redisClient.Get(chatIDString + "_token").Result()
@@ -106,5 +107,5 @@ func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisCli
 
 	issue, _ := client.Issue(issueID)
 
-	return SuccessFillHoursMessageResponse(requestBody.TimeEntry.IssueID, issue, requestBody.TimeEntry.Hours, host), nil
+	return SuccessFillHoursMessageResponse(requestBody.TimeEntry.ID, issue, requestBody.TimeEntry.Hours, host), nil
 }

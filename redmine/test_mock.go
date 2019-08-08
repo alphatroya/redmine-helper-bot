@@ -1,6 +1,10 @@
 package redmine
 
-import "net/http"
+import (
+	"io"
+	"net/http"
+	"strings"
+)
 
 type ClientRequestMock struct {
 	statusCode int
@@ -14,14 +18,17 @@ func (c *ClientRequestMock) Do(req *http.Request) (*http.Response, error) {
 	} else {
 		response.StatusCode = 200
 	}
-	response.Body = &bodyMock{}
+	reader := strings.NewReader(`{ "test": "test" }`)
+	response.Body = &bodyMock{reader}
 	return response, c.mockError
 }
 
-type bodyMock struct{}
+type bodyMock struct{
+	reader io.Reader
+}
 
 func (b *bodyMock) Read(p []byte) (n int, err error) {
-	return 0, nil
+	return b.reader.Read(p)
 }
 
 func (b *bodyMock) Close() error {

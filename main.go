@@ -39,9 +39,9 @@ func main() {
 		log.Panic(err)
 	}
 
-	redmine := redmine.NewRedmineClient(&http.Client{})
+	clientManager := redmine.NewClientManager(&http.Client{})
 
-	handler := UpdateHandler{bot, redisClient, redmine}
+	handler := UpdateHandler{bot, redisClient, clientManager}
 	for update := range updates {
 		if update.Message == nil {
 			continue

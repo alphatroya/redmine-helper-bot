@@ -8,43 +8,43 @@ import (
 	"net/http"
 )
 
-type Redmine interface {
+type Client interface {
 	SetToken(token string)
 	SetHost(host string)
-	FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBody, error)
+	FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBodyResponse, error)
 	Issue(issueID string) (*Issue, error)
-}
-
-func NewRedmineClient(client HTTPClient) *RedmineClient {
-	return &RedmineClient{"", "", client}
 }
 
 func WrongRedmineStatusCodeError(statusCode int, statusText string) error {
 	return fmt.Errorf("Wrong response from redmine server %d - %s", statusCode, statusText)
 }
 
-type RedmineClient struct {
+type ClientManager struct {
 	token         string
 	host          string
 	networkClient HTTPClient
 }
 
-func (r *RedmineClient) SetToken(token string) {
+func NewClientManager(networkClient HTTPClient) *ClientManager {
+	return &ClientManager{networkClient: networkClient}
+}
+
+func (r *ClientManager) SetToken(token string) {
 	r.token = token
 }
 
-func (r *RedmineClient) SetHost(host string) {
+func (r *ClientManager) SetHost(host string) {
 	r.host = host
 }
 
-func (t *RedmineClient) Issue(issueID string) (*Issue, error) {
-	request, err := http.NewRequest("GET", t.host+"/issues/"+issueID+".json", nil)
+func (r *ClientManager) Issue(issueID string) (*Issue, error) {
+	request, err := http.NewRequest("GET", r.host+"/issues/"+issueID+".json", nil)
 	if err != nil {
 		return nil, err
 	}
 
-	t.configure(request)
-	response, err := t.networkClient.Do(request)
+	r.configure(request)
+	response, err := r.networkClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (t *RedmineClient) Issue(issueID string) (*Issue, error) {
 	return issue, nil
 }
 
-func (t *RedmineClient) FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBody, error) {
+func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBodyResponse, error) {
 	requestBody := &TimeEntryBody{
 		&TimeEntry{
 			issueID,
@@ -75,18 +75,18 @@ func (t *RedmineClient) FillHoursRequest(issueID string, hours string, comment s
 		},
 	}
 
-	json, err := json.Marshal(requestBody)
+	body, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, err
 	}
 
-	request, err := http.NewRequest("POST", t.host+"/time_entries.json", bytes.NewBuffer(json))
+	request, err := http.NewRequest("POST", r.host+"/time_entries.json", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
 
-	t.configure(request)
-	response, err := t.networkClient.Do(request)
+	r.configure(request)
+	response, err := r.networkClient.Do(request)
 	if err != nil {
 		return nil, err
 	}
@@ -97,10 +97,20 @@ func (t *RedmineClient) FillHoursRequest(issueID string, hours string, comment s
 		return nil, WrongRedmineStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
 	}
 
-	return requestBody, nil
+	bytesResponse, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	result := new(TimeEntryBodyResponse)
+	err = json.Unmarshal(bytesResponse, result)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }
 
-func (t *RedmineClient) configure(request *http.Request) {
-	request.Header.Set("X-Redmine-API-Key", t.token)
+func (r *ClientManager) configure(request *http.Request) {
+	request.Header.Set("X-Redmine-API-Key", r.token)
 	request.Header.Set("Content-Type", "application/json")
 }
