@@ -30,7 +30,7 @@ func main() {
 	bot.Debug = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-	_, err = bot.SetWebhook(tgbotapi.NewWebhook("https://alphatroya-telegram-bot.herokuapp.com/"+bot.Token))
+	_, err = bot.SetWebhook(tgbotapi.NewWebhook("https://alphatroya-telegram-bot.herokuapp.com/" + bot.Token))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,7 +42,7 @@ func main() {
 		log.Printf("Telegram callback failed: %v", info)
 	}
 	updates := bot.ListenForWebhook("/" + bot.Token)
-	go http.ListenAndServe("0.0.0.0:5000", nil)
+	go http.ListenAndServe("0.0.0.0:80", nil)
 
 	clientManager := redmine.NewClientManager(&http.Client{})
 	handler := UpdateHandler{bot, redisClient, clientManager}
