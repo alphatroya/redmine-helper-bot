@@ -44,7 +44,7 @@ func main() {
 		log.Printf("Telegram callback failed: %v", info)
 	}
 	updates := bot.ListenForWebhook("/" + bot.Token)
-	go http.ListenAndServe(":8080", nil)
+	go http.ListenAndServe(":", nil)
 
 	clientManager := redmine.NewClientManager(&http.Client{})
 	handler := UpdateHandler{bot, redisClient, clientManager}
