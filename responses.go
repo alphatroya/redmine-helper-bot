@@ -15,7 +15,6 @@ const (
 	WrongFillHoursHostNilResponse                = "Адрес сервера не найден"
 	WrongFillHoursWrongIssueIDResponse           = "Введен неправильный номер задачи"
 	WrongFillHoursWrongHoursCountResponse        = "Введено неправильное количество часов"
-	WrongFillHoursWrongStatusCodeResponse        = "Wrong response from redmine server %d - %s"
 	WrongFillHoursWrongNumberOfArgumentsResponse = "Неправильное количество аргументов"
 	UnknownCommandResponse                       = "Введена неправильная команда"
 )

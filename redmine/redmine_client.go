@@ -15,8 +15,8 @@ type Client interface {
 	Issue(issueID string) (*Issue, error)
 }
 
-func WrongRedmineStatusCodeError(statusCode int, statusText string) error {
-	return fmt.Errorf("Wrong response from redmine server %d - %s", statusCode, statusText)
+func WrongStatusCodeError(statusCode int, statusText string) error {
+	return fmt.Errorf("получен ошибочный статус от сервера: %d - %s", statusCode, statusText)
 }
 
 type ClientManager struct {
@@ -52,13 +52,13 @@ func (r *ClientManager) Issue(issueID string) (*Issue, error) {
 	defer response.Body.Close()
 
 	if response.StatusCode >= 400 {
-		return nil, WrongRedmineStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
+		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
 	}
 
-	bytes, err := ioutil.ReadAll(response.Body)
+	readBytes, err := ioutil.ReadAll(response.Body)
 
 	issue := new(Issue)
-	err = json.Unmarshal(bytes, issue)
+	err = json.Unmarshal(readBytes, issue)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment s
 	defer response.Body.Close()
 
 	if response.StatusCode >= 400 {
-		return nil, WrongRedmineStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
+		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
 	}
 
 	bytesResponse, err := ioutil.ReadAll(response.Body)

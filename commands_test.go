@@ -227,7 +227,7 @@ func TestFillHoursWrongResponse(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{"/fillhours 51293 8 Test", 44, fmt.Sprintf(WrongFillHoursWrongStatusCodeResponse, 400, "Bad Request")},
+		{"/fillhours 51293 8 Test", 44, redmine.WrongStatusCodeError(400, "Bad Request").Error()},
 	}
 
 	for _, input := range inputs {
@@ -236,7 +236,7 @@ func TestFillHoursWrongResponse(t *testing.T) {
 
 		redisMock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
 		redisMock.Set(fmt.Sprint(input.chatID)+"_host", "https://test_host.com", 0)
-		redmineMock.SetFillHoursResponse(&redmine.TimeEntryBodyResponse{}, redmine.WrongRedmineStatusCodeError(400, "Bad Request"))
+		redmineMock.SetFillHoursResponse(&redmine.TimeEntryBodyResponse{}, redmine.WrongStatusCodeError(400, "Bad Request"))
 		handler = &UpdateHandler{botMock, redisMock, redmineMock}
 		handler.Handle(input.message, input.chatID)
 		if input.expected != botMock.text {

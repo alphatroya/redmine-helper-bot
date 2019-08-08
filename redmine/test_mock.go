@@ -9,6 +9,11 @@ import (
 type ClientRequestMock struct {
 	statusCode int
 	mockError  error
+	response   string
+}
+
+func NewClientRequestMock(statusCode int, mockError error, response string) *ClientRequestMock {
+	return &ClientRequestMock{statusCode: statusCode, mockError: mockError, response: response}
 }
 
 func (c *ClientRequestMock) Do(req *http.Request) (*http.Response, error) {
@@ -18,12 +23,12 @@ func (c *ClientRequestMock) Do(req *http.Request) (*http.Response, error) {
 	} else {
 		response.StatusCode = 200
 	}
-	reader := strings.NewReader(`{ "test": "test" }`)
+	reader := strings.NewReader(c.response)
 	response.Body = &bodyMock{reader}
 	return response, c.mockError
 }
 
-type bodyMock struct{
+type bodyMock struct {
 	reader io.Reader
 }
 

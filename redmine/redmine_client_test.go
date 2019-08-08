@@ -6,7 +6,7 @@ import (
 )
 
 func TestSuccessRequest(t *testing.T) {
-	networkClient := &ClientRequestMock{}
+	networkClient := NewClientRequestMock(200, nil, `{ "test": "test" }`)
 	redmine := ClientManager{"", "", networkClient}
 	redmine.SetHost("http://google.com")
 	redmine.SetToken("fdjsdfjs")
@@ -17,7 +17,7 @@ func TestSuccessRequest(t *testing.T) {
 }
 
 func TestNetworkErrorResponse(t *testing.T) {
-	networkClient := &ClientRequestMock{400, fmt.Errorf("error")}
+	networkClient := NewClientRequestMock(400, fmt.Errorf("error"), "")
 	redmine := ClientManager{"", "", networkClient}
 	redmine.SetHost("http://google.com")
 	redmine.SetToken("fdjsdfjs")
@@ -28,12 +28,12 @@ func TestNetworkErrorResponse(t *testing.T) {
 }
 
 func TestWrongResponseRequest(t *testing.T) {
-	networkClient := &ClientRequestMock{400, nil}
+	networkClient := NewClientRequestMock(400, nil, "")
 	redmine := ClientManager{"", "", networkClient}
 	redmine.SetHost("http://google.com")
 	redmine.SetToken("fdjsdfjs")
 	_, err := redmine.FillHoursRequest("foo", "bar", "baz")
-	if err != nil && err.Error() != WrongRedmineStatusCodeError(400, "Bad Request").Error() {
+	if err != nil && err.Error() != WrongStatusCodeError(400, "Bad Request").Error() {
 		t.Errorf("Wrong error instance after received wrong status code, got: %s", err)
 	}
 }
