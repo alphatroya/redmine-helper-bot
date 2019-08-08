@@ -12,8 +12,7 @@ import (
 
 func main() {
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379",
-		Password: os.Getenv("REDIS_PASSWORD"),
+		Addr:     "REDIS_URL",
 		DB:       0,
 	})
 	_, err := redisClient.Ping().Result()
