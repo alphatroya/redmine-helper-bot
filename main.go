@@ -12,7 +12,7 @@ import (
 
 func main() {
 	redisClient := redis.NewClient(&redis.Options{
-		Addr: "REDIS_URL:6379",
+		Addr: os.Getenv("REDIS_URL"),
 		DB:   0,
 	})
 	_, err := redisClient.Ping().Result()
