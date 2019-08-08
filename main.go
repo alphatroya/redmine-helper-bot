@@ -11,11 +11,12 @@ import (
 )
 
 func main() {
-	redisClient := redis.NewClient(&redis.Options{
-		Addr: os.Getenv("REDIS_URL"),
-		DB:   0,
-	})
-	_, err := redisClient.Ping().Result()
+	opt, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if err != nil {
+		panic(err)
+	}
+	redisClient := redis.NewClient(opt)
+	_, err = redisClient.Ping().Result()
 	if err != nil {
 		log.Panicf("Connection to Redis instance is broken: %s", err)
 	}
