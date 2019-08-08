@@ -31,7 +31,7 @@ func main() {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	port := os.Getenv("PORT")
 	log.Printf("Port value %s", port)
-	if _, err = bot.SetWebhook(tgbotapi.NewWebhook("https://alphatroya-telegram-bot.herokuapp.com:443/" + bot.Token));
+	if _, err = bot.SetWebhook(tgbotapi.NewWebhook(os.Getenv("SERVER_URL") + ":443/" + bot.Token));
 		err != nil {
 		log.Panicf("Webhook setup failed with error; %s", err)
 	}
