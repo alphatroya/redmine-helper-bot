@@ -123,7 +123,7 @@ func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
 }
 
 func newTimeEntryResponse(comments string, hours float32, ID int) *redmine.TimeEntryResponse {
-	return &redmine.TimeEntryResponse{Comments: comments, Hours: hours, ID: ID}
+	return &redmine.TimeEntryResponse{Comments: comments, Hours: hours, Issue: struct{ ID int "json:\"id\"" }{ID: ID}}
 }
 
 func TestHandleFillHoursSuccessCommand(t *testing.T) {

@@ -20,7 +20,7 @@ const (
 )
 
 func SuccessFillHoursMessageResponse(issueID int, issue *redmine.Issue, hours float32, host string) string {
-	message := fmt.Sprintf("В задачу [#%d](%s/issues/%d/time_entries) добавлено часов: *%f*\n", issueID, host, issueID, hours)
+	message := fmt.Sprintf("В задачу [#%d](%s/issues/%d/time_entries) добавлено часов: *%.1f*\n", issueID, host, issueID, hours)
 	if issue != nil {
 		message += "\n"
 		message += fmt.Sprintf("Задача #%d", issue.Issue.ID)

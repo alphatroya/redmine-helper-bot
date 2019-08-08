@@ -107,5 +107,5 @@ func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisCli
 
 	issue, _ := client.Issue(issueID)
 
-	return SuccessFillHoursMessageResponse(requestBody.TimeEntry.ID, issue, requestBody.TimeEntry.Hours, host), nil
+	return SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, issue, requestBody.TimeEntry.Hours, host), nil
 }
