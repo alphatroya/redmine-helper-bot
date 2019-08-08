@@ -1,30 +1,29 @@
 package main
 
 import (
+	"github.com/alphatroya/redmine-helper-bot/storage"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
-	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
+const (
+	storageURLEnvKey     = "REDIS_URL"
+	telegramBotKeyEnvKey = "TELEGRAM_BOT_KEY"
+)
+
 func main() {
-	opt, err := redis.ParseURL(os.Getenv("REDIS_URL"))
+	redisClient, err := storage.NewStorageInstance(storageURLEnvKey)
 	if err != nil {
-		panic(err)
-	}
-	redisClient := redis.NewClient(opt)
-	_, err = redisClient.Ping().Result()
-	if err != nil {
-		log.Panicf("Connection to Redis instance is broken: %s", err)
+		log.Panicf("Storage configuration failed with error: %s", err)
 	}
 
-	apiKey := os.Getenv("TELEGRAM_BOT_KEY")
-	bot, err := tgbotapi.NewBotAPI(apiKey)
+	bot, err := tgbotapi.NewBotAPI(os.Getenv(telegramBotKeyEnvKey))
 	if err != nil {
-		log.Panicf("Connection to telegram bot is broken: %s", err)
+		log.Panicf("Connection to telegram bot is broken, error: %s", err)
 	}
 
 	bot.Debug = true
@@ -32,9 +31,9 @@ func main() {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 	port := os.Getenv("PORT")
 	log.Printf("Port value %s", port)
-	_, err = bot.SetWebhook(tgbotapi.NewWebhook("https://alphatroya-telegram-bot.herokuapp.com:443/" + bot.Token))
-	if err != nil {
-		log.Fatal(err)
+	if _, err = bot.SetWebhook(tgbotapi.NewWebhook("https://alphatroya-telegram-bot.herokuapp.com:443/" + bot.Token));
+		err != nil {
+		log.Panicf("Webhook setup failed with error; %s", err)
 	}
 	info, err := bot.GetWebhookInfo()
 	if err != nil {
@@ -53,6 +52,9 @@ func main() {
 		if update.Message == nil {
 			continue
 		}
-		handler.Handle(update.Message.Text, update.Message.Chat.ID)
+		if !update.Message.IsCommand() {
+			continue
+		}
+		handler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
 	}
 }
