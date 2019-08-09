@@ -53,7 +53,7 @@ func (t *UpdateHandler) handleTokenMessage(message string, redisClient storage.M
 	if len(splittedMessage) > 1 || len(message) == 0 {
 		return WrongTokenMessageResponse
 	}
-	redisClient.Set(fmt.Sprint(chatID)+"_token", splittedMessage[0], 0)
+	redisClient.SetToken(splittedMessage[0], chatID)
 	return SuccessTokenMessageResponse
 }
 
@@ -66,20 +66,19 @@ func (t *UpdateHandler) handleHostMessage(message string, redisClient storage.Ma
 	if err != nil {
 		return "", err
 	}
-	redisClient.Set(fmt.Sprint(chatID)+"_host", splittedMessage[0], 0)
+	redisClient.SetHost(splittedMessage[0], chatID)
 	return SuccessHostMessageResponse, nil
 }
 
 func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisClient storage.Manager, client redmine.Client) (string, error) {
-	chatIDString := fmt.Sprint(chatID)
 
-	token, err := redisClient.Get(chatIDString + "_token").Result()
+	token, err := redisClient.GetToken(chatID)
 	if err != nil {
 		return "", fmt.Errorf(WrongFillHoursTokenNilResponse)
 	}
 	client.SetToken(token)
 
-	host, err := redisClient.Get(chatIDString + "_host").Result()
+	host, err := redisClient.GetHost(chatID)
 	if err != nil {
 		return "", fmt.Errorf(WrongFillHoursHostNilResponse)
 	}
