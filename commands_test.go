@@ -77,7 +77,7 @@ func TestStorageTokenData(t *testing.T) {
 		defer teardownSubTest(t)
 
 		handler.Handle("token", message.command, message.chatID)
-		tokenValue := redisMock.Get(fmt.Sprint(message.chatID) + "_token").Val()
+		tokenValue := redisMock.storageToken[message.chatID]
 		if tokenValue != message.command {
 			t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, message.command)
 		}
@@ -97,7 +97,7 @@ func TestMultipleRequestStorageTokenData(t *testing.T) {
 	handler.Handle("token", command, chatID)
 	handler.Handle("token", command2, chatID2)
 
-	tokenValue := redisMock.Get(fmt.Sprint(chatID2) + "_token").Val()
+	tokenValue := redisMock.storageToken[chatID2]
 	if tokenValue != command2 {
 		t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, command2)
 	}
@@ -118,7 +118,7 @@ func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
 
 	for _, message := range data {
 		handler.Handle("host", message.url, message.chatID)
-		hostValue := redisMock.Get(fmt.Sprint(message.chatID) + "_host").Val()
+		hostValue := redisMock.storageHost[message.chatID]
 		if hostValue != message.url {
 			t.Errorf("Wrong saved host value %s is not %s", hostValue, message.url)
 		}
@@ -150,8 +150,8 @@ func TestHandleFillHoursSuccessCommand(t *testing.T) {
 		defer teardownSubTest(t)
 		redmineBody := newTimeEntryResponse(message.comments, message.hours, message.issueID)
 		redmineMock.SetFillHoursResponse(&redmine.TimeEntryBodyResponse{TimeEntry: *redmineBody}, nil)
-		redisMock.Set(fmt.Sprint(message.chatID)+"_token", "Test_TOKEN", 0)
-		redisMock.Set(fmt.Sprint(message.chatID)+"_host", host, 0)
+		redisMock.SetToken("Test_TOKEN", message.chatID)
+		redisMock.SetHost(host, message.chatID)
 		handler.Handle("fillhours", fmt.Sprintf("%d %f %s", message.issueID, message.hours, message.comments), message.chatID)
 		if botMock.text != message.expected {
 			t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, message.expected)
@@ -193,7 +193,7 @@ func TestHandleFillHoursNilHostFailCommand(t *testing.T) {
 		expected string
 	}{"fillhours", "43212 8 Test", 44, WrongFillHoursHostNilResponse}
 
-	redisMock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
+	redisMock.SetToken("TestToken", input.chatID)
 	handler.Handle(input.command, input.message, input.chatID)
 	if input.expected != botMock.text {
 		t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
@@ -219,8 +219,8 @@ func TestFillHoursWrongInput(t *testing.T) {
 		teardownSubTest := setupSubTest(t)
 		defer teardownSubTest(t)
 
-		redisMock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
-		redisMock.Set(fmt.Sprint(input.chatID)+"_host", "https://test_host.com", 0)
+		redisMock.SetToken("Test_Token", input.chatID)
+		redisMock.SetHost("https://test_host.com", input.chatID)
 		handler.Handle("fillhours", input.message, input.chatID)
 		if input.expected != botMock.text {
 			t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
@@ -242,8 +242,8 @@ func TestFillHoursWrongResponse(t *testing.T) {
 		teardownSubTest := setupSubTest(t)
 		defer teardownSubTest(t)
 
-		redisMock.Set(fmt.Sprint(input.chatID)+"_token", "TestToken", 0)
-		redisMock.Set(fmt.Sprint(input.chatID)+"_host", "https://test_host.com", 0)
+		redisMock.SetToken("Test_Token", input.chatID)
+		redisMock.SetHost("https://test_host.com", input.chatID)
 		redmineMock.SetFillHoursResponse(&redmine.TimeEntryBodyResponse{}, redmine.WrongStatusCodeError(400, "Bad Request"))
 		handler = &UpdateHandler{botMock, redisMock, redmineMock}
 		handler.Handle(input.command, input.message, input.chatID)

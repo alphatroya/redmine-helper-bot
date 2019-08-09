@@ -1,14 +1,37 @@
 package storage
 
 import (
+	"fmt"
 	"github.com/go-redis/redis"
 	"os"
 	"time"
 )
 
 type Manager interface {
-	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
-	Get(key string) *redis.StringCmd
+	SetToken(token string, chat int64)
+	GetToken(int64) (string, error)
+	SetHost(host string, chat int64)
+	GetHost(chat int64) (string, error)
+}
+
+type RedisStorage struct {
+	redis redisInstance
+}
+
+func (r RedisStorage) SetToken(token string, chat int64) {
+	r.redis.Set(fmt.Sprint(chat)+"_token", token, 0)
+}
+
+func (r RedisStorage) GetToken(chat int64) (string, error) {
+	return r.redis.Get(fmt.Sprint(chat) + "_token").Result()
+}
+
+func (r RedisStorage) SetHost(host string, chat int64) {
+	r.redis.Set(fmt.Sprint(chat)+"_host", host, 0)
+}
+
+func (r RedisStorage) GetHost(chat int64) (string, error) {
+	return r.redis.Get(fmt.Sprint(chat) + "_host").Result()
 }
 
 func NewStorageInstance(urlEnvironment string) (Manager, error) {
@@ -21,6 +44,10 @@ func NewStorageInstance(urlEnvironment string) (Manager, error) {
 	if err != nil {
 		return nil, err
 	}
-	return redisClient, err
+	return &RedisStorage{redisClient}, err
 }
 
+type redisInstance interface {
+	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
+	Get(key string) *redis.StringCmd
+}

@@ -2,34 +2,44 @@ package main
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/alphatroya/redmine-helper-bot/redmine"
-	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type RedisMock struct {
-	storage map[string]string
+	storageToken map[int64]string
+	storageHost  map[int64]string
 }
 
 func NewRedisMock() *RedisMock {
 	mock := new(RedisMock)
-	mock.storage = make(map[string]string)
+	mock.storageToken = make(map[int64]string)
+	mock.storageHost = make(map[int64]string)
 	return mock
 }
 
-func (r *RedisMock) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
-	r.storage[key] = value.(string)
-	return redis.NewStatusCmd(value)
+func (r RedisMock) SetToken(token string, chat int64) {
+	r.storageToken[chat] = token
 }
 
-func (r *RedisMock) Get(key string) *redis.StringCmd {
-	result, ok := r.storage[key]
+func (r RedisMock) GetToken(chat int64) (string, error) {
+	token, ok := r.storageToken[chat]
 	if !ok {
-		return redis.NewStringResult("", fmt.Errorf("storage value is nil"))
+		return "", fmt.Errorf("storage value is nil")
 	}
-	return redis.NewStringResult(result, nil)
+	return token, nil
+}
+
+func (r RedisMock) SetHost(host string, chat int64) {
+	r.storageHost[chat] = host
+}
+
+func (r RedisMock) GetHost(chat int64) (string, error) {
+	host, ok := r.storageHost[chat]
+	if !ok {
+		return "", fmt.Errorf("storage value is nil")
+	}
+	return host, nil
 }
 
 type RedmineClientMock struct {
