@@ -4,17 +4,14 @@ GOLINT := $(GO_BIN)/golangci-lint
 
 all: install
 
-install: bootstrap fmt
+install: fmt
 	go install -v
 
 test:
 	go test ./... -v
 
 coverage:
-	go test -v -race -coverprofile=coverage.txt -covermode=atomic
-
-bootstrap:
-	go get ./...
+	go test ./... -v -race -coverprofile=coverage.txt -covermode=atomic
 
 lint: $(GOLINT)
 	golangci-lint run
@@ -28,4 +25,4 @@ $(GOIMPORTS):
 $(GOLINT):
 	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
 
-.PHONY: install test fmt lint bootstrap
+.PHONY: install test fmt lint
