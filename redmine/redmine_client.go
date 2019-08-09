@@ -56,6 +56,9 @@ func (r *ClientManager) Issue(issueID string) (*Issue, error) {
 	}
 
 	readBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	issue := new(Issue)
 	err = json.Unmarshal(readBytes, issue)

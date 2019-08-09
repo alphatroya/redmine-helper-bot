@@ -36,7 +36,7 @@ func main() {
 		bot.Debug = true
 		configureLongPolling(handler, bot)
 	} else {
-		configureWebHookObserving(handler, bot, err)
+		configureWebHookObserving(handler, bot)
 	}
 }
 
@@ -55,10 +55,10 @@ func configureLongPolling(handler UpdateHandler, bot *tgbotapi.BotAPI) {
 	}
 }
 
-func configureWebHookObserving(updateHandler UpdateHandler, bot *tgbotapi.BotAPI, err error) {
+func configureWebHookObserving(updateHandler UpdateHandler, bot *tgbotapi.BotAPI) {
 	port := os.Getenv("PORT")
 	log.Printf("Port value %s", port)
-	if _, err = bot.SetWebhook(tgbotapi.NewWebhook(os.Getenv("SERVER_URL") + ":443/" + bot.Token)); err != nil {
+	if _, err := bot.SetWebhook(tgbotapi.NewWebhook(os.Getenv("SERVER_URL") + ":443/" + bot.Token)); err != nil {
 		log.Panicf("Webhook setup failed with error; %s", err)
 	}
 	info, err := bot.GetWebhookInfo()
