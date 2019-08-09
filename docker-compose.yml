@@ -1,23 +1,21 @@
 version: "2"
 services:
-  redis:
+  redis_db:
     image: redis:3.0
     expose:
       - 6379
-    command: >
-     --requirepass $REDIS_PASSWORD
-     --appendonly yes
     volumes:
       - ./redis:/data
 
   redmine-bot:
     build: .
-    command: app
+    command: /app/main
     links:
-      - redis
+      - redis_db
     depends_on:
-      - redis
+      - redis_db
     environment:
-      TELEGRAM_BOT_KEY: $TELEGRAM_BOT_KEY
-      REDIS_PASSWORD: $REDIS_PASSWORD
+      - TELEGRAM_BOT_KEY=$TELEGRAM_BOT_KEY
+      - DEBUG=true
+      - REDIS_URL=redis://redis_db:6379
 

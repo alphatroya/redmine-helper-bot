@@ -12,3 +12,6 @@
 *.out
 
 redmine-helper-bot
+
+.idea
+redis

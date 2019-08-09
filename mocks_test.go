@@ -2,15 +2,14 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
+	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/go-redis/redis"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
 type RedisMock struct {
-	redis.Cmdable
 	storage map[string]string
 }
 
@@ -28,34 +27,36 @@ func (r *RedisMock) Set(key string, value interface{}, expiration time.Duration)
 func (r *RedisMock) Get(key string) *redis.StringCmd {
 	result, ok := r.storage[key]
 	if !ok {
-		return redis.NewStringResult("", fmt.Errorf("Storage value is nil"))
+		return redis.NewStringResult("", fmt.Errorf("storage value is nil"))
 	}
 	return redis.NewStringResult(result, nil)
 }
 
-type ClientRequestMock struct {
-	statusCode int
+type RedmineClientMock struct {
+	host          string
+	token         string
+	response      interface{}
+	responseError error
 }
 
-func (c *ClientRequestMock) Do(req *http.Request) (*http.Response, error) {
-	response := &http.Response{}
-	if c.statusCode != 0 {
-		response.StatusCode = c.statusCode
-	} else {
-		response.StatusCode = 200
-	}
-	response.Body = &bodyMock{}
-	return response, nil
+func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string) (*redmine.TimeEntryBodyResponse, error) {
+	return r.response.(*redmine.TimeEntryBodyResponse), r.responseError
 }
 
-type bodyMock struct{}
-
-func (b *bodyMock) Read(p []byte) (n int, err error) {
-	return 0, nil
+func (r *RedmineClientMock) SetToken(token string) {
+	r.token = token
 }
 
-func (b *bodyMock) Close() error {
-	return nil
+func (r *RedmineClientMock) SetHost(host string) {
+	r.host = host
+}
+
+func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.TimeEntryBodyResponse, responseError error) {
+	r.response, r.responseError = body, responseError
+}
+
+func (r *RedmineClientMock) Issue(issueID string) (*redmine.Issue, error) {
+	return nil, r.responseError
 }
 
 type MockBotSender struct {

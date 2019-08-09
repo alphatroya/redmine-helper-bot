@@ -4,6 +4,7 @@ go:
   - 1.x
 
 script:
+  - export GO111MODULE=on
   - make coverage
 
 after_success:
