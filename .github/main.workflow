@@ -4,5 +4,5 @@ workflow "Test" {
 }
 
 action "continuous-integration-workflow" {
-  uses = "./continuous-integration-workflow.yml"
+  uses = "./workflows/continuous-integration-workflow.yml"
 }
