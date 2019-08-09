@@ -23,7 +23,7 @@ type Issue struct {
 			ID   int    `json:"id"`
 			Name string `json:"name"`
 		} `json:"project"`
-		SpentHours int `json:"spent_hours"`
+		SpentHours float32 `json:"spent_hours"`
 		Status     struct {
 			ID   int    `json:"id"`
 			Name string `json:"name"`

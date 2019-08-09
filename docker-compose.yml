@@ -4,6 +4,8 @@ services:
     image: redis:3.0
     expose:
       - 6379
+    command: >
+     --appendonly yes
     volumes:
       - ./redis:/data
 

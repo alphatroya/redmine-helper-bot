@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/alphatroya/redmine-helper-bot/storage"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/alphatroya/redmine-helper-bot/storage"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
@@ -57,8 +58,7 @@ func configureLongPolling(handler UpdateHandler, bot *tgbotapi.BotAPI) {
 func configureWebHookObserving(updateHandler UpdateHandler, bot *tgbotapi.BotAPI, err error) {
 	port := os.Getenv("PORT")
 	log.Printf("Port value %s", port)
-	if _, err = bot.SetWebhook(tgbotapi.NewWebhook(os.Getenv("SERVER_URL") + ":443/" + bot.Token));
-		err != nil {
+	if _, err = bot.SetWebhook(tgbotapi.NewWebhook(os.Getenv("SERVER_URL") + ":443/" + bot.Token)); err != nil {
 		log.Panicf("Webhook setup failed with error; %s", err)
 	}
 	info, err := bot.GetWebhookInfo()
