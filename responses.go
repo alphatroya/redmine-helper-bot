@@ -23,19 +23,15 @@ func SuccessFillHoursMessageResponse(issueID int, issue *redmine.Issue, hours fl
 	message := fmt.Sprintf("В задачу [#%d](%s/issues/%d/time_entries) добавлено часов: *%.1f*\n", issueID, host, issueID, hours)
 	if issue != nil {
 		message += "\n"
-		message += fmt.Sprintf("Задача #%d", issue.Issue.ID)
+		message += fmt.Sprintf("*Задача* %s", issue.Issue.Subject)
 		message += "\n"
-	}
+		message += fmt.Sprintf("*Статус* %s\n", issue.Issue.Status.Name)
+		message += fmt.Sprintf("*Автор* %s\n", issue.Issue.Author.Name)
+		message += fmt.Sprintf("*Назначена* %s\n", issue.Issue.AssignedTo.Name)
+		message += fmt.Sprintf("*Всего часов* %.1f\n", issue.Issue.SpentHours)
 
-	number := int(hours)
-	if number > 0 {
 		message += "\n"
-		message += "_Сколько это Джонов Траволт? А вот сколько:_\n"
-		message += "\n"
-		for i := 0; i < number; i++ {
-			message += "🕺"
-		}
-		message += "\n"
+		message += fmt.Sprintf("_%s_\n", issue.Issue.Description)
 	}
 	return message
 }
