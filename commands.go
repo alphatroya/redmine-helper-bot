@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,14 +28,20 @@ func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 	switch command {
 	case "token":
 		command := commands.NewSetTokenCommand(t.storage, chatID)
-		t.bot.Send(tgbotapi.NewMessage(chatID, command.Handle(message)))
-	case "host":
-		message, err := t.handleHostMessage(message, t.storage, chatID)
+		message, err := command.Handle(message)
 		if err != nil {
 			t.bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
-		} else {
-			t.bot.Send(tgbotapi.NewMessage(chatID, message))
+			return
 		}
+		t.bot.Send(tgbotapi.NewMessage(chatID, message))
+	case "host":
+		command := commands.NewSetHostCommand(t.storage, chatID)
+		message, err := command.Handle(message)
+		if err != nil {
+			t.bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
+			return
+		}
+		t.bot.Send(tgbotapi.NewMessage(chatID, message))
 	case "fillhours":
 		message, err := t.handleFillMessage(message, chatID, t.storage, t.client)
 		if err != nil {
@@ -49,19 +54,6 @@ func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 	default:
 		t.bot.Send(tgbotapi.NewMessage(chatID, UnknownCommandResponse))
 	}
-}
-
-func (t *UpdateHandler) handleHostMessage(message string, redisClient storage.Manager, chatID int64) (string, error) {
-	splittedMessage := strings.Split(message, " ")
-	if len(splittedMessage) > 1 || len(message) == 0 {
-		return "", fmt.Errorf(WrongHostMessageResponse)
-	}
-	_, err := url.ParseRequestURI(splittedMessage[0])
-	if err != nil {
-		return "", err
-	}
-	redisClient.SetHost(splittedMessage[0], chatID)
-	return SuccessHostMessageResponse, nil
 }
 
 func (t *UpdateHandler) handleFillMessage(message string, chatID int64, redisClient storage.Manager, client redmine.Client) (string, error) {

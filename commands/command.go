@@ -1,6 +1,6 @@
 package commands
 
 type Command interface {
-	Handle(message string) string
+	Handle(message string) (string, error)
 	Cancel()
 }
