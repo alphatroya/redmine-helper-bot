@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/alphatroya/redmine-helper-bot/commands"
+
 	"github.com/alphatroya/redmine-helper-bot/storage"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
@@ -26,7 +28,8 @@ type UpdateHandler struct {
 func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 	switch command {
 	case "token":
-		t.bot.Send(tgbotapi.NewMessage(chatID, t.handleTokenMessage(message, t.storage, chatID)))
+		command := commands.NewSetTokenCommand(t.storage, chatID)
+		t.bot.Send(tgbotapi.NewMessage(chatID, command.Handle(message)))
 	case "host":
 		message, err := t.handleHostMessage(message, t.storage, chatID)
 		if err != nil {
@@ -46,15 +49,6 @@ func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 	default:
 		t.bot.Send(tgbotapi.NewMessage(chatID, UnknownCommandResponse))
 	}
-}
-
-func (t *UpdateHandler) handleTokenMessage(message string, redisClient storage.Manager, chatID int64) string {
-	splittedMessage := strings.Split(message, " ")
-	if len(splittedMessage) > 1 || len(message) == 0 {
-		return WrongTokenMessageResponse
-	}
-	redisClient.SetToken(splittedMessage[0], chatID)
-	return SuccessTokenMessageResponse
 }
 
 func (t *UpdateHandler) handleHostMessage(message string, redisClient storage.Manager, chatID int64) (string, error) {

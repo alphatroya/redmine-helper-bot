@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/alphatroya/redmine-helper-bot/commands"
+	"github.com/alphatroya/redmine-helper-bot/mocks"
+
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 )
 
@@ -15,13 +18,13 @@ func setupSubTest(t *testing.T) func(t *testing.T) {
 }
 
 var botMock *MockBotSender
-var redisMock *RedisMock
+var redisMock *mocks.StorageMock
 var redmineMock *RedmineClientMock
 var handler *UpdateHandler
 
 func setup() {
 	botMock = &MockBotSender{}
-	redisMock = NewRedisMock()
+	redisMock = mocks.NewStorageMock()
 	redmineMock = &RedmineClientMock{"", "", nil, nil}
 	handler = &UpdateHandler{botMock, redisMock, redmineMock}
 }
@@ -40,10 +43,10 @@ func TestTokenRequest(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{"token", "", 1, WrongTokenMessageResponse},
-		{"token", "test test", 1, WrongTokenMessageResponse},
-		{"token", "fdsjfdsj", 1, SuccessTokenMessageResponse},
-		{"token", "  ", 1, WrongTokenMessageResponse},
+		{"token", "", 1, commands.WrongTokenMessageResponse},
+		{"token", "test test", 1, commands.WrongTokenMessageResponse},
+		{"token", "fdsjfdsj", 1, commands.SuccessTokenMessageResponse},
+		{"token", "  ", 1, commands.WrongTokenMessageResponse},
 		{"", "qwertyu", 1, UnknownCommandResponse},
 		{"host", "", 1, WrongHostMessageResponse},
 		{"host", " ", 1, WrongHostMessageResponse},
@@ -77,7 +80,7 @@ func TestStorageTokenData(t *testing.T) {
 		defer teardownSubTest(t)
 
 		handler.Handle("token", message.command, message.chatID)
-		tokenValue := redisMock.storageToken[message.chatID]
+		tokenValue := redisMock.StorageToken()[message.chatID]
 		if tokenValue != message.command {
 			t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, message.command)
 		}
@@ -97,7 +100,7 @@ func TestMultipleRequestStorageTokenData(t *testing.T) {
 	handler.Handle("token", command, chatID)
 	handler.Handle("token", command2, chatID2)
 
-	tokenValue := redisMock.storageToken[chatID2]
+	tokenValue := redisMock.StorageToken()[chatID2]
 	if tokenValue != command2 {
 		t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, command2)
 	}
@@ -118,7 +121,7 @@ func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
 
 	for _, message := range data {
 		handler.Handle("host", message.url, message.chatID)
-		hostValue := redisMock.storageHost[message.chatID]
+		hostValue := redisMock.StorageHost()[message.chatID]
 		if hostValue != message.url {
 			t.Errorf("Wrong saved host value %s is not %s", hostValue, message.url)
 		}

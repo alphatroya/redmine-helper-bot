@@ -7,8 +7,6 @@ import (
 )
 
 const (
-	WrongTokenMessageResponse                    = "Неправильное количество аргументов"
-	SuccessTokenMessageResponse                  = "Токен успешно обновлен"
 	WrongHostMessageResponse                     = "Неправильное количество аргументов"
 	SuccessHostMessageResponse                   = "Адрес сервера успешно обновлен"
 	WrongFillHoursTokenNilResponse               = "Токен доступа для текущего пользователя не найден"
