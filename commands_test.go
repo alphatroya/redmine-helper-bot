@@ -143,9 +143,9 @@ func TestHandleFillHoursSuccessCommand(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{43212, 8, "Test", 44, SuccessFillHoursMessageResponse(43212, nil, 8, host)},
-		{51293, 8.0, "Test", 44, SuccessFillHoursMessageResponse(51293, nil, 8.0, host)},
-		{51293, 9.6, "Test", 44, SuccessFillHoursMessageResponse(51293, nil, 9.6, host)},
+		{43212, 8, "Test", 44, commands.SuccessFillHoursMessageResponse(43212, nil, 8, host)},
+		{51293, 8.0, "Test", 44, commands.SuccessFillHoursMessageResponse(51293, nil, 8.0, host)},
+		{51293, 9.6, "Test", 44, commands.SuccessFillHoursMessageResponse(51293, nil, 9.6, host)},
 	}
 
 	for _, message := range tables {
@@ -177,7 +177,7 @@ func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
 		message  string
 		chatID   int64
 		expected string
-	}{"fillhours", "43212 8 Test", 44, WrongFillHoursTokenNilResponse}
+	}{"fillhours", "43212 8 Test", 44, commands.WrongFillHoursTokenNilResponse}
 
 	handler.Handle(input.command, input.message, input.chatID)
 	if input.expected != botMock.text {
@@ -194,7 +194,7 @@ func TestHandleFillHoursNilHostFailCommand(t *testing.T) {
 		message  string
 		chatID   int64
 		expected string
-	}{"fillhours", "43212 8 Test", 44, WrongFillHoursHostNilResponse}
+	}{"fillhours", "43212 8 Test", 44, commands.WrongFillHoursHostNilResponse}
 
 	redisMock.SetToken("TestToken", input.chatID)
 	handler.Handle(input.command, input.message, input.chatID)
@@ -209,13 +209,13 @@ func TestFillHoursWrongInput(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{"aaaa 8 Test", 44, WrongFillHoursWrongIssueIDResponse},
-		{"<51293 8 Test", 44, WrongFillHoursWrongIssueIDResponse},
-		{"51293 8a Test", 44, WrongFillHoursWrongHoursCountResponse},
-		{"51293 ff Test", 44, WrongFillHoursWrongHoursCountResponse},
-		{"51293 9,6 Test", 44, WrongFillHoursWrongHoursCountResponse},
-		{"51293", 44, WrongFillHoursWrongNumberOfArgumentsResponse},
-		{"51293 6", 44, WrongFillHoursWrongNumberOfArgumentsResponse},
+		{"aaaa 8 Test", 44, commands.WrongFillHoursWrongIssueIDResponse},
+		{"<51293 8 Test", 44, commands.WrongFillHoursWrongIssueIDResponse},
+		{"51293 8a Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
+		{"51293 ff Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
+		{"51293 9,6 Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
+		{"51293", 44, commands.WrongFillHoursWrongNumberOfArgumentsResponse},
+		{"51293 6", 44, commands.WrongFillHoursWrongNumberOfArgumentsResponse},
 	}
 
 	for _, input := range inputs {

@@ -11,16 +11,16 @@ const (
 	SuccessTokenMessageResponse = "Токен успешно обновлен"
 )
 
-type SetToken struct {
+type SetTokenCommand struct {
 	storage storage.Manager
 	chatID  int64
 }
 
-func NewSetTokenCommand(storage storage.Manager, chatID int64) *SetToken {
-	return &SetToken{storage: storage, chatID: chatID}
+func NewSetTokenCommand(storage storage.Manager, chatID int64) *SetTokenCommand {
+	return &SetTokenCommand{storage: storage, chatID: chatID}
 }
 
-func (s SetToken) Handle(message string) (string, error) {
+func (s SetTokenCommand) Handle(message string) (string, error) {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) > 1 || len(message) == 0 {
 		return "", fmt.Errorf(WrongTokenMessageResponse)
@@ -29,5 +29,5 @@ func (s SetToken) Handle(message string) (string, error) {
 	return SuccessTokenMessageResponse, nil
 }
 
-func (s SetToken) Cancel() {
+func (s SetTokenCommand) Cancel() {
 }
