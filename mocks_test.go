@@ -12,6 +12,10 @@ type RedmineClientMock struct {
 	responseError error
 }
 
+func (r *RedmineClientMock) AssignedIssues() ([]*redmine.Issue, error) {
+	panic("implement me")
+}
+
 func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string) (*redmine.TimeEntryBodyResponse, error) {
 	return r.response.(*redmine.TimeEntryBodyResponse), r.responseError
 }
@@ -28,7 +32,7 @@ func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.TimeEntryBodyResp
 	r.response, r.responseError = body, responseError
 }
 
-func (r *RedmineClientMock) Issue(issueID string) (*redmine.Issue, error) {
+func (r *RedmineClientMock) Issue(issueID string) (*redmine.IssueContainer, error) {
 	return nil, r.responseError
 }
 

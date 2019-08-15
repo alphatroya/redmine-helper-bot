@@ -18,7 +18,7 @@ const (
 	WrongFillHoursWrongNumberOfArgumentsResponse = "Неправильное количество аргументов"
 )
 
-func SuccessFillHoursMessageResponse(issueID int, issue *redmine.Issue, hours float32, host string) string {
+func SuccessFillHoursMessageResponse(issueID int, issue *redmine.IssueContainer, hours float32, host string) string {
 	message := fmt.Sprintf("В задачу [#%d](%s/issues/%d/time_entries) добавлено часов: *%.1f*\n", issueID, host, issueID, hours)
 	if issue != nil {
 		message += "\n"

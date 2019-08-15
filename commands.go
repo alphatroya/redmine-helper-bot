@@ -21,17 +21,22 @@ type UpdateHandler struct {
 	client  redmine.Client
 }
 
+var commandHandler commands.Command
+
 func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 	commandBuilder := commands.NewBotCommandsBuilder(t.storage, t.client, chatID)
-	commandHandler := commandBuilder.Build(command, message, nil)
+	commandHandler = commandBuilder.Build(command, message, commandHandler)
 	message, err := commandHandler.Handle(message)
+	var newMessage tgbotapi.MessageConfig
 	if err != nil {
-		_, err = t.bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
-		log.Printf("got error during send operation, got: %s", err)
-		return
+		newMessage = tgbotapi.NewMessage(chatID, err.Error())
+	} else {
+		newMessage = tgbotapi.NewMessage(chatID, message)
 	}
-	telegramMessage := tgbotapi.NewMessage(chatID, message)
-	telegramMessage.ParseMode = "Markdown"
-	_, err = t.bot.Send(telegramMessage)
-	log.Printf("got error during send operation, got: %s", err)
+	newMessage.ParseMode = tgbotapi.ModeMarkdown
+
+	_, err = t.bot.Send(newMessage)
+	if err != nil {
+		log.Printf("error during send operation, got: %s", err)
+	}
 }

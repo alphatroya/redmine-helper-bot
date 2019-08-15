@@ -70,10 +70,14 @@ func configureWebHookObserving(updateHandler UpdateHandler, bot *tgbotapi.BotAPI
 	}
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	go http.ListenAndServe(":"+port, nil)
+	handleUpdates(updates, updateHandler)
+}
+
+func handleUpdates(updates tgbotapi.UpdatesChannel, handler UpdateHandler) {
 	for update := range updates {
 		if update.Message == nil {
 			continue
 		}
-		updateHandler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
+		handler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
 	}
 }

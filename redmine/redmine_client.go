@@ -12,7 +12,8 @@ type Client interface {
 	SetToken(token string)
 	SetHost(host string)
 	FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBodyResponse, error)
-	Issue(issueID string) (*Issue, error)
+	Issue(issueID string) (*IssueContainer, error)
+	AssignedIssues() ([]*Issue, error)
 }
 
 func WrongStatusCodeError(statusCode int, statusText string) error {
@@ -37,7 +38,39 @@ func (r *ClientManager) SetHost(host string) {
 	r.host = host
 }
 
-func (r *ClientManager) Issue(issueID string) (*Issue, error) {
+func (r *ClientManager) AssignedIssues() ([]*Issue, error) {
+	request, err := http.NewRequest("GET", r.host+"/issues.json?assigned_to_id=me", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	r.configure(request)
+	response, err := r.networkClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	if response.StatusCode >= 400 {
+		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
+	}
+
+	readBytes, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	issues := new(IssuesList)
+	err = json.Unmarshal(readBytes, issues)
+	if err != nil {
+		return nil, err
+	}
+
+	return issues.Issues, nil
+}
+
+func (r *ClientManager) Issue(issueID string) (*IssueContainer, error) {
 	request, err := http.NewRequest("GET", r.host+"/issues/"+issueID+".json", nil)
 	if err != nil {
 		return nil, err
@@ -60,7 +93,7 @@ func (r *ClientManager) Issue(issueID string) (*Issue, error) {
 		return nil, err
 	}
 
-	issue := new(Issue)
+	issue := new(IssueContainer)
 	err = json.Unmarshal(readBytes, issue)
 	if err != nil {
 		return nil, err
