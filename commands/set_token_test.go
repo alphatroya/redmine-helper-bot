@@ -2,8 +2,9 @@ package commands
 
 import (
 	"fmt"
-	"github.com/alphatroya/redmine-helper-bot/mocks"
 	"testing"
+
+	"github.com/alphatroya/redmine-helper-bot/mocks"
 )
 
 func TestSetTokenCommand(t *testing.T) {
@@ -21,7 +22,7 @@ func TestSetTokenCommand(t *testing.T) {
 
 	for _, message := range data {
 		storageMock := mocks.NewStorageMock()
-		command := NewSetTokenCommand(storageMock, message.chatID)
+		command := newSetTokenCommand(storageMock, message.chatID)
 		result, err := command.Handle(message.text)
 		if result != message.expected {
 			t.Errorf("Wrong success response, expected: %s, got: %s", message.expected, result)

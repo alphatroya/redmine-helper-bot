@@ -2,9 +2,10 @@ package storage
 
 import (
 	"fmt"
-	"github.com/go-redis/redis"
 	"os"
 	"time"
+
+	"github.com/go-redis/redis"
 )
 
 type Manager interface {

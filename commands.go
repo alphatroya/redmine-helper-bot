@@ -1,6 +1,8 @@
 package main
 
 import (
+	"log"
+
 	"github.com/alphatroya/redmine-helper-bot/commands"
 
 	"github.com/alphatroya/redmine-helper-bot/storage"
@@ -20,34 +22,16 @@ type UpdateHandler struct {
 }
 
 func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
-	switch command {
-	case "token":
-		command := commands.NewSetTokenCommand(t.storage, chatID)
-		message, err := command.Handle(message)
-		if err != nil {
-			t.bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
-			return
-		}
-		t.bot.Send(tgbotapi.NewMessage(chatID, message))
-	case "host":
-		command := commands.NewSetHostCommand(t.storage, chatID)
-		message, err := command.Handle(message)
-		if err != nil {
-			t.bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
-			return
-		}
-		t.bot.Send(tgbotapi.NewMessage(chatID, message))
-	case "fillhours":
-		command := commands.NewFillHoursCommand(t.storage, chatID, t.client)
-		message, err := command.Handle(message)
-		if err != nil {
-			t.bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
-			return
-		}
-		telegramMessage := tgbotapi.NewMessage(chatID, message)
-		telegramMessage.ParseMode = "Markdown"
-		t.bot.Send(telegramMessage)
-	default:
-		t.bot.Send(tgbotapi.NewMessage(chatID, UnknownCommandResponse))
+	commandBuilder := commands.NewBotCommandsBuilder(t.storage, t.client, chatID)
+	commandHandler := commandBuilder.Build(command, message, nil)
+	message, err := commandHandler.Handle(message)
+	if err != nil {
+		_, err = t.bot.Send(tgbotapi.NewMessage(chatID, err.Error()))
+		log.Printf("got error during send operation, got: %s", err)
+		return
 	}
+	telegramMessage := tgbotapi.NewMessage(chatID, message)
+	telegramMessage.ParseMode = "Markdown"
+	_, err = t.bot.Send(telegramMessage)
+	log.Printf("got error during send operation, got: %s", err)
 }

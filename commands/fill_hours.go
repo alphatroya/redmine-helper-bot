@@ -2,11 +2,12 @@ package commands
 
 import (
 	"fmt"
-	"github.com/alphatroya/redmine-helper-bot/redmine"
-	"github.com/alphatroya/redmine-helper-bot/storage"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/alphatroya/redmine-helper-bot/redmine"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 const (
@@ -40,7 +41,7 @@ type FillHoursCommand struct {
 	redmineClient redmine.Client
 }
 
-func NewFillHoursCommand(storage storage.Manager, chatID int64, redmineClient redmine.Client) *FillHoursCommand {
+func newFillHoursCommand(storage storage.Manager, chatID int64, redmineClient redmine.Client) *FillHoursCommand {
 	return &FillHoursCommand{storage: storage, chatID: chatID, redmineClient: redmineClient}
 }
 
@@ -81,7 +82,4 @@ func (f FillHoursCommand) Handle(message string) (string, error) {
 	issue, _ := f.redmineClient.Issue(issueID)
 
 	return SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, issue, requestBody.TimeEntry.Hours, host), nil
-}
-
-func (f FillHoursCommand) Cancel() {
 }

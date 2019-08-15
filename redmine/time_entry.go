@@ -37,4 +37,3 @@ type TimeEntryResponse struct {
 		Name string `json:"name"`
 	} `json:"user"`
 }
-

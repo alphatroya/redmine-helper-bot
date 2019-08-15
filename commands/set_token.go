@@ -2,8 +2,9 @@ package commands
 
 import (
 	"fmt"
-	"github.com/alphatroya/redmine-helper-bot/storage"
 	"strings"
+
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 const (
@@ -16,7 +17,7 @@ type SetTokenCommand struct {
 	chatID  int64
 }
 
-func NewSetTokenCommand(storage storage.Manager, chatID int64) *SetTokenCommand {
+func newSetTokenCommand(storage storage.Manager, chatID int64) *SetTokenCommand {
 	return &SetTokenCommand{storage: storage, chatID: chatID}
 }
 
@@ -27,7 +28,4 @@ func (s SetTokenCommand) Handle(message string) (string, error) {
 	}
 	s.storage.SetToken(splittedMessage[0], s.chatID)
 	return SuccessTokenMessageResponse, nil
-}
-
-func (s SetTokenCommand) Cancel() {
 }

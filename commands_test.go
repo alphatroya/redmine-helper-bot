@@ -47,12 +47,12 @@ func TestTokenRequest(t *testing.T) {
 		{"token", "test test", 1, commands.WrongTokenMessageResponse},
 		{"token", "fdsjfdsj", 1, commands.SuccessTokenMessageResponse},
 		{"token", "  ", 1, commands.WrongTokenMessageResponse},
-		{"", "qwertyu", 1, UnknownCommandResponse},
-		{"host", "", 1, commands.WrongHostMessageResponse},
-		{"host", " ", 1, commands.WrongHostMessageResponse},
-		{"host", "test test", 1, commands.WrongHostMessageResponse},
+		{"", "qwertyu", 1, "Введена неправильная команда"},
+		{"host", "", 1, "Неправильное количество аргументов"},
+		{"host", " ", 1, "Неправильное количество аргументов"},
+		{"host", "test test", 1, "Неправильное количество аргументов"},
 		{"host", "test", 1, "parse test: invalid URI for request"},
-		{"host", "https://www.google.com", 1, commands.SuccessHostMessageResponse},
+		{"host", "https://www.google.com", 1, "Адрес сервера успешно обновлен"},
 	}
 
 	for _, message := range data {
