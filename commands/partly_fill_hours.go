@@ -61,11 +61,13 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	if err != nil {
 		return nil, err
 	}
-	message += fmt.Sprintln("Введите номер задачи")
+	message += fmt.Sprintln("*Введите номер задачи*")
+	message += fmt.Sprintln("-----------------------------")
 	message += fmt.Sprintln("")
-	message += fmt.Sprintln("На вас назначены следующие задачи:")
+	message += fmt.Sprintln("_Вы можете выбрать номер из списка снизу или ввести свой (только номер без символа #)_")
+	message += fmt.Sprintln("")
 	for _, issue := range issues {
-		message += fmt.Sprintf("#%d: %s\n", issue.ID, issue.Subject)
+		message += fmt.Sprintf("*#%d* %s\n", issue.ID, issue.Subject)
 	}
 	p.issuesRequested = true
 	return NewCommandResult(message), err
