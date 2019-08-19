@@ -47,12 +47,7 @@ func configureLongPolling(handler UpdateHandler, bot *tgbotapi.BotAPI) {
 	if err != nil {
 		log.Panicf("Failed to obtain updates channel, error: %s", err)
 	}
-	for update := range updates {
-		if update.Message == nil {
-			continue
-		}
-		handler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
-	}
+	handleUpdates(updates, handler)
 }
 
 func configureWebHookObserving(updateHandler UpdateHandler, bot *tgbotapi.BotAPI) {
@@ -70,10 +65,18 @@ func configureWebHookObserving(updateHandler UpdateHandler, bot *tgbotapi.BotAPI
 	}
 	updates := bot.ListenForWebhook("/" + bot.Token)
 	go http.ListenAndServe(":"+port, nil)
+	handleUpdates(updates, updateHandler)
+}
+
+func handleUpdates(updates tgbotapi.UpdatesChannel, handler UpdateHandler) {
 	for update := range updates {
 		if update.Message == nil {
 			continue
 		}
-		updateHandler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
+		if update.Message.IsCommand() {
+			handler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
+		} else {
+			handler.HandleMessage(update.Message.Text, update.Message.Chat.ID)
+		}
 	}
 }

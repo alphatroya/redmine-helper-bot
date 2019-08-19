@@ -2,9 +2,10 @@ package storage
 
 import (
 	"fmt"
-	"github.com/go-redis/redis"
 	"testing"
 	"time"
+
+	"github.com/go-redis/redis"
 )
 
 type RedisMock struct {

@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/alphatroya/redmine-helper-bot/commands"
+	"github.com/alphatroya/redmine-helper-bot/mocks"
+
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 )
 
@@ -15,13 +18,13 @@ func setupSubTest(t *testing.T) func(t *testing.T) {
 }
 
 var botMock *MockBotSender
-var redisMock *RedisMock
+var redisMock *mocks.StorageMock
 var redmineMock *RedmineClientMock
 var handler *UpdateHandler
 
 func setup() {
 	botMock = &MockBotSender{}
-	redisMock = NewRedisMock()
+	redisMock = mocks.NewStorageMock()
 	redmineMock = &RedmineClientMock{"", "", nil, nil}
 	handler = &UpdateHandler{botMock, redisMock, redmineMock}
 }
@@ -40,16 +43,16 @@ func TestTokenRequest(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{"token", "", 1, WrongTokenMessageResponse},
-		{"token", "test test", 1, WrongTokenMessageResponse},
-		{"token", "fdsjfdsj", 1, SuccessTokenMessageResponse},
-		{"token", "  ", 1, WrongTokenMessageResponse},
-		{"", "qwertyu", 1, UnknownCommandResponse},
-		{"host", "", 1, WrongHostMessageResponse},
-		{"host", " ", 1, WrongHostMessageResponse},
-		{"host", "test test", 1, WrongHostMessageResponse},
+		{"token", "", 1, commands.WrongTokenMessageResponse},
+		{"token", "test test", 1, commands.WrongTokenMessageResponse},
+		{"token", "fdsjfdsj", 1, commands.SuccessTokenMessageResponse},
+		{"token", "  ", 1, commands.WrongTokenMessageResponse},
+		{"", "qwertyu", 1, "Введена неправильная команда"},
+		{"host", "", 1, "Неправильное количество аргументов"},
+		{"host", " ", 1, "Неправильное количество аргументов"},
+		{"host", "test test", 1, "Неправильное количество аргументов"},
 		{"host", "test", 1, "parse test: invalid URI for request"},
-		{"host", "https://www.google.com", 1, SuccessHostMessageResponse},
+		{"host", "https://www.google.com", 1, "Адрес сервера успешно обновлен"},
 	}
 
 	for _, message := range data {
@@ -77,7 +80,7 @@ func TestStorageTokenData(t *testing.T) {
 		defer teardownSubTest(t)
 
 		handler.Handle("token", message.command, message.chatID)
-		tokenValue := redisMock.storageToken[message.chatID]
+		tokenValue := redisMock.StorageToken()[message.chatID]
 		if tokenValue != message.command {
 			t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, message.command)
 		}
@@ -97,7 +100,7 @@ func TestMultipleRequestStorageTokenData(t *testing.T) {
 	handler.Handle("token", command, chatID)
 	handler.Handle("token", command2, chatID2)
 
-	tokenValue := redisMock.storageToken[chatID2]
+	tokenValue := redisMock.StorageToken()[chatID2]
 	if tokenValue != command2 {
 		t.Errorf("Wrong token storage logic: %s is not %s", tokenValue, command2)
 	}
@@ -118,7 +121,7 @@ func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
 
 	for _, message := range data {
 		handler.Handle("host", message.url, message.chatID)
-		hostValue := redisMock.storageHost[message.chatID]
+		hostValue := redisMock.StorageHost()[message.chatID]
 		if hostValue != message.url {
 			t.Errorf("Wrong saved host value %s is not %s", hostValue, message.url)
 		}
@@ -140,9 +143,9 @@ func TestHandleFillHoursSuccessCommand(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{43212, 8, "Test", 44, SuccessFillHoursMessageResponse(43212, nil, 8, host)},
-		{51293, 8.0, "Test", 44, SuccessFillHoursMessageResponse(51293, nil, 8.0, host)},
-		{51293, 9.6, "Test", 44, SuccessFillHoursMessageResponse(51293, nil, 9.6, host)},
+		{43212, 8, "Test", 44, commands.SuccessFillHoursMessageResponse(43212, nil, 8, host)},
+		{51293, 8.0, "Test", 44, commands.SuccessFillHoursMessageResponse(51293, nil, 8.0, host)},
+		{51293, 9.6, "Test", 44, commands.SuccessFillHoursMessageResponse(51293, nil, 9.6, host)},
 	}
 
 	for _, message := range tables {
@@ -174,7 +177,7 @@ func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
 		message  string
 		chatID   int64
 		expected string
-	}{"fillhours", "43212 8 Test", 44, WrongFillHoursTokenNilResponse}
+	}{"fillhours", "43212 8 Test", 44, commands.WrongFillHoursTokenNilResponse}
 
 	handler.Handle(input.command, input.message, input.chatID)
 	if input.expected != botMock.text {
@@ -191,7 +194,7 @@ func TestHandleFillHoursNilHostFailCommand(t *testing.T) {
 		message  string
 		chatID   int64
 		expected string
-	}{"fillhours", "43212 8 Test", 44, WrongFillHoursHostNilResponse}
+	}{"fillhours", "43212 8 Test", 44, commands.WrongFillHoursHostNilResponse}
 
 	redisMock.SetToken("TestToken", input.chatID)
 	handler.Handle(input.command, input.message, input.chatID)
@@ -206,13 +209,13 @@ func TestFillHoursWrongInput(t *testing.T) {
 		chatID   int64
 		expected string
 	}{
-		{"aaaa 8 Test", 44, WrongFillHoursWrongIssueIDResponse},
-		{"<51293 8 Test", 44, WrongFillHoursWrongIssueIDResponse},
-		{"51293 8a Test", 44, WrongFillHoursWrongHoursCountResponse},
-		{"51293 ff Test", 44, WrongFillHoursWrongHoursCountResponse},
-		{"51293 9,6 Test", 44, WrongFillHoursWrongHoursCountResponse},
-		{"51293", 44, WrongFillHoursWrongNumberOfArgumentsResponse},
-		{"51293 6", 44, WrongFillHoursWrongNumberOfArgumentsResponse},
+		{"aaaa 8 Test", 44, commands.WrongFillHoursWrongIssueIDResponse},
+		{"<51293 8 Test", 44, commands.WrongFillHoursWrongIssueIDResponse},
+		{"51293 8a Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
+		{"51293 ff Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
+		{"51293 9,6 Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
+		{"51293", 44, commands.WrongFillHoursWrongNumberOfArgumentsResponse},
+		{"51293 6", 44, commands.WrongFillHoursWrongNumberOfArgumentsResponse},
 	}
 
 	for _, input := range inputs {

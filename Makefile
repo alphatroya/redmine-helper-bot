@@ -17,7 +17,7 @@ lint: $(GOLINT)
 	golangci-lint run
 
 fmt: $(GOIMPORTS)
-	goimports -w *.go
+	goimports -w -l .
 
 $(GOIMPORTS):
 	go get -u golang.org/x/tools/cmd/goimports
