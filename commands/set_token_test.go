@@ -24,7 +24,7 @@ func TestSetTokenCommand(t *testing.T) {
 		storageMock := mocks.NewStorageMock()
 		command := newSetTokenCommand(storageMock, message.chatID)
 		result, err := command.Handle(message.text)
-		if result != message.expected {
+		if result != nil && result.Message() != message.expected {
 			t.Errorf("Wrong success response, expected: %s, got: %s", message.expected, result)
 		}
 		if err != nil && err.Error() != message.error.Error() {

@@ -31,6 +31,6 @@ func (b BotCommandsBuilder) Build(command string, message string, previousComman
 		}
 		return newFillHoursCommand(b.storage, b.chatID, b.redmineClient)
 	default:
-		return newUnknownCommand()
+		return NewUnknownCommand()
 	}
 }

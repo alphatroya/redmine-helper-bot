@@ -25,7 +25,7 @@ func TestSetHostCommand(t *testing.T) {
 		storageMock := mocks.NewStorageMock()
 		command := newSetHostCommand(storageMock, message.chatID)
 		result, err := command.Handle(message.text)
-		if result != message.expected {
+		if result != nil && result.message != message.expected {
 			t.Errorf("Wrong success response, input: %s, expected: %s, got: %s", message.text, message.expected, result)
 		}
 		if err != nil && err.Error() != message.error.Error() {

@@ -3,12 +3,12 @@ package commands
 type UnknownCommand struct {
 }
 
-func newUnknownCommand() *UnknownCommand {
+func NewUnknownCommand() *UnknownCommand {
 	return &UnknownCommand{}
 }
 
 const unknownCommandResponse = "Введена неправильная команда"
 
-func (u UnknownCommand) Handle(message string) (string, error) {
-	return unknownCommandResponse, nil
+func (u UnknownCommand) Handle(message string) (*CommandResult, error) {
+	return NewCommandResult(unknownCommandResponse), nil
 }

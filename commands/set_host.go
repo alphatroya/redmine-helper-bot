@@ -22,15 +22,15 @@ func newSetHostCommand(storage storage.Manager, chatID int64) *SetHostCommand {
 	return &SetHostCommand{storage: storage, chatID: chatID}
 }
 
-func (s SetHostCommand) Handle(message string) (string, error) {
+func (s SetHostCommand) Handle(message string) (*CommandResult, error) {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) > 1 || len(message) == 0 {
-		return "", fmt.Errorf(wrongHostMessageResponse)
+		return nil, fmt.Errorf(wrongHostMessageResponse)
 	}
 	_, err := url.ParseRequestURI(splittedMessage[0])
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	s.storage.SetHost(splittedMessage[0], s.chatID)
-	return successHostMessageResponse, nil
+	return NewCommandResult(successHostMessageResponse), nil
 }

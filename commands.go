@@ -26,12 +26,34 @@ var commandHandler commands.Command
 func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 	commandBuilder := commands.NewBotCommandsBuilder(t.storage, t.client, chatID)
 	commandHandler = commandBuilder.Build(command, message, commandHandler)
-	message, err := commandHandler.Handle(message)
+	result, err := commandHandler.Handle(message)
 	var newMessage tgbotapi.MessageConfig
 	if err != nil {
 		newMessage = tgbotapi.NewMessage(chatID, err.Error())
 	} else {
-		newMessage = tgbotapi.NewMessage(chatID, message)
+		newMessage = tgbotapi.NewMessage(chatID, result.Message())
+	}
+	newMessage.ParseMode = tgbotapi.ModeMarkdown
+
+	_, err = t.bot.Send(newMessage)
+	if err != nil {
+		log.Printf("error during send operation, got: %s", err)
+	}
+}
+
+func (t *UpdateHandler) HandleMessage(message string, chatID int64) {
+	var result *commands.CommandResult
+	var err error
+	if commandHandler == nil {
+		result, err = commands.NewUnknownCommand().Handle(message)
+	} else {
+		result, err = commandHandler.Handle(message)
+	}
+	var newMessage tgbotapi.MessageConfig
+	if err != nil {
+		newMessage = tgbotapi.NewMessage(chatID, err.Error())
+	} else {
+		newMessage = tgbotapi.NewMessage(chatID, result.Message())
 	}
 	newMessage.ParseMode = tgbotapi.ModeMarkdown
 

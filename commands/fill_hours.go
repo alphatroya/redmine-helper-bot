@@ -45,41 +45,41 @@ func newFillHoursCommand(storage storage.Manager, chatID int64, redmineClient re
 	return &FillHoursCommand{storage: storage, chatID: chatID, redmineClient: redmineClient}
 }
 
-func (f FillHoursCommand) Handle(message string) (string, error) {
+func (f FillHoursCommand) Handle(message string) (*CommandResult, error) {
 	token, err := f.storage.GetToken(f.chatID)
 	if err != nil {
-		return "", fmt.Errorf(WrongFillHoursTokenNilResponse)
+		return nil, fmt.Errorf(WrongFillHoursTokenNilResponse)
 	}
 	f.redmineClient.SetToken(token)
 
 	host, err := f.storage.GetHost(f.chatID)
 	if err != nil {
-		return "", fmt.Errorf(WrongFillHoursHostNilResponse)
+		return nil, fmt.Errorf(WrongFillHoursHostNilResponse)
 	}
 	f.redmineClient.SetHost(host)
 
 	splitted := strings.Split(message, " ")
 	if len(splitted) < 3 {
-		return "", fmt.Errorf(WrongFillHoursWrongNumberOfArgumentsResponse)
+		return nil, fmt.Errorf(WrongFillHoursWrongNumberOfArgumentsResponse)
 	}
 
 	regex := regexp.MustCompile(`^[0-9]+$`)
 	issueID := splitted[0]
 	if !regex.MatchString(issueID) {
-		return "", fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
+		return nil, fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
 	}
 
 	_, conversionError := strconv.ParseFloat(splitted[1], 32)
 	if conversionError != nil {
-		return "", fmt.Errorf(WrongFillHoursWrongHoursCountResponse)
+		return nil, fmt.Errorf(WrongFillHoursWrongHoursCountResponse)
 	}
 
 	requestBody, err := f.redmineClient.FillHoursRequest(issueID, splitted[1], strings.Join(splitted[2:], " "))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	issue, _ := f.redmineClient.Issue(issueID)
 
-	return SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, issue, requestBody.TimeEntry.Hours, host), nil
+	return NewCommandResult(SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, issue, requestBody.TimeEntry.Hours, host)), nil
 }
