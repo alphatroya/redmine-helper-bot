@@ -61,8 +61,11 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	if err != nil {
 		return nil, err
 	}
+	message += fmt.Sprintln("Введите номер задачи")
+	message += fmt.Sprintln("")
+	message += fmt.Sprintln("На вас назначены следующие задачи:")
 	for _, issue := range issues {
-		message += fmt.Sprintf("%d: %s\n", issue.ID, issue.Subject)
+		message += fmt.Sprintf("#%d: %s\n", issue.ID, issue.Subject)
 	}
 	p.issuesRequested = true
 	return NewCommandResult(message), err
@@ -75,7 +78,7 @@ func (p *PartlyFillHoursCommand) saveIssueID(issueID string) (*CommandResult, er
 	}
 	p.issueID = issueID
 	p.isIssueIDSet = true
-	return NewCommandResult("Номер issue id установлен, введите число часов"), nil
+	return NewCommandResult("Номер задачи установлен, введите число часов"), nil
 }
 
 func (p *PartlyFillHoursCommand) saveHours(hours string) (*CommandResult, error) {
@@ -85,7 +88,7 @@ func (p *PartlyFillHoursCommand) saveHours(hours string) (*CommandResult, error)
 	}
 	p.hours = hours
 	p.isHoursSet = true
-	return NewCommandResult("Число часов установлено, введите комментарий"), nil
+	return NewCommandResult("Количество часов установлено, введите комментарий"), nil
 }
 
 func (p *PartlyFillHoursCommand) setComment(comment string) (*CommandResult, error) {
