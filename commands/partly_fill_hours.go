@@ -2,11 +2,12 @@ package commands
 
 import (
 	"fmt"
-	"github.com/alphatroya/redmine-helper-bot/redmine"
-	"github.com/alphatroya/redmine-helper-bot/storage"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/alphatroya/redmine-helper-bot/redmine"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 type PartlyFillHoursCommand struct {
@@ -66,8 +67,16 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	message += fmt.Sprintln("")
 	message += fmt.Sprintln("_Вы можете выбрать номер из списка снизу или ввести свой_")
 	message += fmt.Sprintln("")
+	projects := make(map[string][]*redmine.Issue)
 	for _, issue := range issues {
-		message += fmt.Sprintf("*#%d* %s\n", issue.ID, issue.Subject)
+		projects[issue.Project.Name] = append(projects[issue.Project.Name], issue)
+	}
+	for key, value := range projects {
+		message += fmt.Sprintf("*%s*\n", key)
+		for _, issue := range value {
+			message += fmt.Sprintf("    *#%d* %s\n", issue.ID, issue.Subject)
+		}
+		message += fmt.Sprintln("")
 	}
 	p.issuesRequested = true
 	return NewCommandResult(message), err
