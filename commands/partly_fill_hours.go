@@ -64,7 +64,7 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	message += fmt.Sprintln("*Введите номер задачи*")
 	message += fmt.Sprintln("-----------------------------")
 	message += fmt.Sprintln("")
-	message += fmt.Sprintln("_Вы можете выбрать номер из списка снизу или ввести свой (только номер без символа #)_")
+	message += fmt.Sprintln("_Вы можете выбрать номер из списка снизу или ввести свой_")
 	message += fmt.Sprintln("")
 	for _, issue := range issues {
 		message += fmt.Sprintf("*#%d* %s\n", issue.ID, issue.Subject)
@@ -74,6 +74,7 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 }
 
 func (p *PartlyFillHoursCommand) saveIssueID(issueID string) (*CommandResult, error) {
+	issueID = strings.TrimLeft(issueID, "#")
 	regex := regexp.MustCompile(`^[0-9]+$`)
 	if !regex.MatchString(issueID) {
 		return nil, fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
