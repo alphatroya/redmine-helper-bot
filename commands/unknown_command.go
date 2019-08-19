@@ -12,3 +12,7 @@ const unknownCommandResponse = "Введена неправильная кома
 func (u UnknownCommand) Handle(message string) (*CommandResult, error) {
 	return NewCommandResult(unknownCommandResponse), nil
 }
+
+func (u UnknownCommand) IsCompleted() bool {
+	return true
+}

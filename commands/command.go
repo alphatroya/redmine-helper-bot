@@ -2,6 +2,7 @@ package commands
 
 type Command interface {
 	Handle(message string) (*CommandResult, error)
+	IsCompleted() bool
 }
 
 type CommandResult struct {

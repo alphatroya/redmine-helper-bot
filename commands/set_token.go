@@ -17,6 +17,10 @@ type SetTokenCommand struct {
 	chatID  int64
 }
 
+func (s SetTokenCommand) IsCompleted() bool {
+	return true
+}
+
 func newSetTokenCommand(storage storage.Manager, chatID int64) *SetTokenCommand {
 	return &SetTokenCommand{storage: storage, chatID: chatID}
 }

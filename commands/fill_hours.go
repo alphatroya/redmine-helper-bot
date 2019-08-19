@@ -41,6 +41,10 @@ type FillHoursCommand struct {
 	redmineClient redmine.Client
 }
 
+func (f FillHoursCommand) IsCompleted() bool {
+	return true
+}
+
 func newFillHoursCommand(storage storage.Manager, chatID int64, redmineClient redmine.Client) *FillHoursCommand {
 	return &FillHoursCommand{storage: storage, chatID: chatID, redmineClient: redmineClient}
 }

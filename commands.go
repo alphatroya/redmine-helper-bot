@@ -44,7 +44,7 @@ func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 func (t *UpdateHandler) HandleMessage(message string, chatID int64) {
 	var result *commands.CommandResult
 	var err error
-	if commandHandler == nil {
+	if commandHandler == nil || commandHandler.IsCompleted() {
 		result, err = commands.NewUnknownCommand().Handle(message)
 	} else {
 		result, err = commandHandler.Handle(message)

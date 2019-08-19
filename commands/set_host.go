@@ -18,6 +18,10 @@ type SetHostCommand struct {
 	chatID  int64
 }
 
+func (s SetHostCommand) IsCompleted() bool {
+	return true
+}
+
 func newSetHostCommand(storage storage.Manager, chatID int64) *SetHostCommand {
 	return &SetHostCommand{storage: storage, chatID: chatID}
 }
