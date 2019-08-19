@@ -27,7 +27,7 @@ func (b BotCommandsBuilder) Build(command string, message string, previousComman
 		return newSetHostCommand(b.storage, b.chatID)
 	case "fillhours":
 		if len(message) == 0 {
-			return NewPartlyFillHoursCommand(b.redmineClient, b.storage, b.chatID)
+			return newPartlyFillHoursCommand(b.redmineClient, b.storage, b.chatID)
 		}
 		return newFillHoursCommand(b.storage, b.chatID, b.redmineClient)
 	default:

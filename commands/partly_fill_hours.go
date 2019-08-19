@@ -26,7 +26,7 @@ func (p *PartlyFillHoursCommand) IsCompleted() bool {
 	return p.isCompleted
 }
 
-func NewPartlyFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, chatID int64) *PartlyFillHoursCommand {
+func newPartlyFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, chatID int64) *PartlyFillHoursCommand {
 	return &PartlyFillHoursCommand{redmineClient: redmineClient, storage: storage, chatID: chatID}
 }
 
