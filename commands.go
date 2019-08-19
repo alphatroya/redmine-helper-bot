@@ -27,18 +27,7 @@ func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 	commandBuilder := commands.NewBotCommandsBuilder(t.storage, t.client, chatID)
 	commandHandler = commandBuilder.Build(command, message, commandHandler)
 	result, err := commandHandler.Handle(message)
-	var newMessage tgbotapi.MessageConfig
-	if err != nil {
-		newMessage = tgbotapi.NewMessage(chatID, err.Error())
-	} else {
-		newMessage = tgbotapi.NewMessage(chatID, result.Message())
-	}
-	newMessage.ParseMode = tgbotapi.ModeMarkdown
-
-	_, err = t.bot.Send(newMessage)
-	if err != nil {
-		log.Printf("error during send operation, got: %s", err)
-	}
+	t.sendMessage(result, err, chatID)
 }
 
 func (t *UpdateHandler) HandleMessage(message string, chatID int64) {
@@ -49,6 +38,10 @@ func (t *UpdateHandler) HandleMessage(message string, chatID int64) {
 	} else {
 		result, err = commandHandler.Handle(message)
 	}
+	t.sendMessage(result, err, chatID)
+}
+
+func (t *UpdateHandler) sendMessage(result *commands.CommandResult, err error, chatID int64) {
 	var newMessage tgbotapi.MessageConfig
 	if err != nil {
 		newMessage = tgbotapi.NewMessage(chatID, err.Error())
@@ -56,7 +49,6 @@ func (t *UpdateHandler) HandleMessage(message string, chatID int64) {
 		newMessage = tgbotapi.NewMessage(chatID, result.Message())
 	}
 	newMessage.ParseMode = tgbotapi.ModeMarkdown
-
 	_, err = t.bot.Send(newMessage)
 	if err != nil {
 		log.Printf("error during send operation, got: %s", err)

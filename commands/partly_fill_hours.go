@@ -2,11 +2,12 @@ package commands
 
 import (
 	"fmt"
-	"github.com/alphatroya/redmine-helper-bot/redmine"
-	"github.com/alphatroya/redmine-helper-bot/storage"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/alphatroya/redmine-helper-bot/redmine"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 type PartlyFillHoursCommand struct {
