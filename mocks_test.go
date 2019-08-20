@@ -12,6 +12,10 @@ type RedmineClientMock struct {
 	responseError error
 }
 
+func (r *RedmineClientMock) Activities() ([]*redmine.Activities, error) {
+	panic("implement me")
+}
+
 func (r *RedmineClientMock) AssignedIssues() ([]*redmine.Issue, error) {
 	panic("implement me")
 }

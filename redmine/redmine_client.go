@@ -14,6 +14,7 @@ type Client interface {
 	FillHoursRequest(issueID string, hours string, comment string, activityID string) (*TimeEntryBodyResponse, error)
 	Issue(issueID string) (*IssueContainer, error)
 	AssignedIssues() ([]*Issue, error)
+	Activities() ([]*Activities, error)
 }
 
 func WrongStatusCodeError(statusCode int, statusText string) error {

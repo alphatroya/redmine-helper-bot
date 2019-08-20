@@ -54,6 +54,10 @@ func (s StorageMock) GetHost(chat int64) (string, error) {
 type RedmineMock struct {
 }
 
+func (r RedmineMock) Activities() ([]*redmine.Activities, error) {
+	panic("implement me")
+}
+
 func (r RedmineMock) SetToken(token string) {
 	panic("implement me")
 }
