@@ -6,29 +6,28 @@ import (
 )
 
 type Builder interface {
-	Build(command string, message string, previousCommand Command) Command
+	Build(command string, message string, chatID int64) Command
 }
 
 type BotCommandsBuilder struct {
 	storage       storage.Manager
 	redmineClient redmine.Client
-	chatID        int64
 }
 
-func NewBotCommandsBuilder(storage storage.Manager, redmineClient redmine.Client, chatID int64) *BotCommandsBuilder {
-	return &BotCommandsBuilder{storage: storage, redmineClient: redmineClient, chatID: chatID}
+func NewBotCommandsBuilder(storage storage.Manager, redmineClient redmine.Client) *BotCommandsBuilder {
+	return &BotCommandsBuilder{storage: storage, redmineClient: redmineClient}
 }
 
-func (b BotCommandsBuilder) Build(command string, message string, previousCommand Command) Command {
+func (b BotCommandsBuilder) Build(command string, message string, chatID int64) Command {
 	switch command {
 	case "token":
-		return newSetTokenCommand(b.storage, b.chatID)
+		return newSetTokenCommand(b.storage, chatID)
 	case "host":
-		return newSetHostCommand(b.storage, b.chatID)
+		return newSetHostCommand(b.storage, chatID)
 	case "fillhours":
-		return newPartlyFillHoursCommand(b.redmineClient, b.storage, b.chatID)
+		return newPartlyFillHoursCommand(b.redmineClient, b.storage, chatID)
 	case "activities":
-		return newActivitiesCommand(b.redmineClient, b.storage, b.chatID)
+		return newActivitiesCommand(b.redmineClient, b.storage, chatID)
 	case "start":
 		return newIntroCommand()
 	case "stop":
