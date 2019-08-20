@@ -29,6 +29,10 @@ func (b BotCommandsBuilder) Build(command string, message string, previousComman
 		return newPartlyFillHoursCommand(b.redmineClient, b.storage, b.chatID)
 	case "activities":
 		return newActivitiesCommand(b.redmineClient, b.storage, b.chatID)
+	case "start":
+		return newIntroCommand()
+	case "stop":
+		return newStopCommand()
 	default:
 		return NewUnknownCommand()
 	}
