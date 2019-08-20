@@ -1,16 +1,16 @@
 package commands
 
-type Stop struct {
+type StopCommand struct {
 }
 
-func newStopCommand() *Stop {
-	return &Stop{}
+func newStopCommand() *StopCommand {
+	return &StopCommand{}
 }
 
-func (s Stop) Handle(message string) (*CommandResult, error) {
+func (s StopCommand) Handle(message string) (*CommandResult, error) {
 	return NewCommandResult("Бот остановлен"), nil
 }
 
-func (s Stop) IsCompleted() bool {
+func (s StopCommand) IsCompleted() bool {
 	return true
 }
