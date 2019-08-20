@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/alphatroya/redmine-helper-bot/commands"
@@ -134,40 +133,6 @@ func newTimeEntryResponse(comments string, hours float32, ID int) *redmine.TimeE
 	}{ID: ID}}
 }
 
-func TestHandleFillHoursSuccessCommand(t *testing.T) {
-	host := "https://test_host.com"
-	tables := []struct {
-		issueID  int
-		hours    float32
-		comments string
-		chatID   int64
-		expected string
-	}{
-		{43212, 8, "Test", 44, commands.SuccessFillHoursMessageResponse(43212, nil, 8, host)},
-		{51293, 8.0, "Test", 44, commands.SuccessFillHoursMessageResponse(51293, nil, 8.0, host)},
-		{51293, 9.6, "Test", 44, commands.SuccessFillHoursMessageResponse(51293, nil, 9.6, host)},
-	}
-
-	for _, message := range tables {
-		teardownSubTest := setupSubTest(t)
-		defer teardownSubTest(t)
-		redmineBody := newTimeEntryResponse(message.comments, message.hours, message.issueID)
-		redmineMock.SetFillHoursResponse(&redmine.TimeEntryBodyResponse{TimeEntry: *redmineBody}, nil)
-		redisMock.SetToken("Test_TOKEN", message.chatID)
-		redisMock.SetHost(host, message.chatID)
-		handler.Handle("fillhours", fmt.Sprintf("%d %f %s", message.issueID, message.hours, message.comments), message.chatID)
-		if botMock.text != message.expected {
-			t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, message.expected)
-		}
-		if redmineMock.host != host {
-			t.Errorf("Command should set host parameter, received %s", redmineMock.host)
-		}
-		if redmineMock.token != "Test_TOKEN" {
-			t.Errorf("Command should set token parameter, received %s", redmineMock.token)
-		}
-	}
-}
-
 func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
 	teardownSubTest := setupSubTest(t)
 	defer teardownSubTest(t)
@@ -200,58 +165,5 @@ func TestHandleFillHoursNilHostFailCommand(t *testing.T) {
 	handler.Handle(input.command, input.message, input.chatID)
 	if input.expected != botMock.text {
 		t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
-	}
-}
-
-func TestFillHoursWrongInput(t *testing.T) {
-	inputs := []struct {
-		message  string
-		chatID   int64
-		expected string
-	}{
-		{"aaaa 8 Test", 44, commands.WrongFillHoursWrongIssueIDResponse},
-		{"<51293 8 Test", 44, commands.WrongFillHoursWrongIssueIDResponse},
-		{"51293 8a Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
-		{"51293 ff Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
-		{"51293 9,6 Test", 44, commands.WrongFillHoursWrongHoursCountResponse},
-		{"51293", 44, commands.WrongFillHoursWrongNumberOfArgumentsResponse},
-		{"51293 6", 44, commands.WrongFillHoursWrongNumberOfArgumentsResponse},
-	}
-
-	for _, input := range inputs {
-		teardownSubTest := setupSubTest(t)
-		defer teardownSubTest(t)
-
-		redisMock.SetToken("Test_Token", input.chatID)
-		redisMock.SetHost("https://test_host.com", input.chatID)
-		handler.Handle("fillhours", input.message, input.chatID)
-		if input.expected != botMock.text {
-			t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
-		}
-	}
-}
-
-func TestFillHoursWrongResponse(t *testing.T) {
-	inputs := []struct {
-		command  string
-		message  string
-		chatID   int64
-		expected string
-	}{
-		{"fillhours", "51293 8 Test", 44, redmine.WrongStatusCodeError(400, "Bad Request").Error()},
-	}
-
-	for _, input := range inputs {
-		teardownSubTest := setupSubTest(t)
-		defer teardownSubTest(t)
-
-		redisMock.SetToken("Test_Token", input.chatID)
-		redisMock.SetHost("https://test_host.com", input.chatID)
-		redmineMock.SetFillHoursResponse(&redmine.TimeEntryBodyResponse{}, redmine.WrongStatusCodeError(400, "Bad Request"))
-		handler = &UpdateHandler{botMock, redisMock, redmineMock}
-		handler.Handle(input.command, input.message, input.chatID)
-		if input.expected != botMock.text {
-			t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
-		}
 	}
 }

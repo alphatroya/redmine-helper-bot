@@ -11,9 +11,10 @@ import (
 type Client interface {
 	SetToken(token string)
 	SetHost(host string)
-	FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBodyResponse, error)
+	FillHoursRequest(issueID string, hours string, comment string, activityID string) (*TimeEntryBodyResponse, error)
 	Issue(issueID string) (*IssueContainer, error)
 	AssignedIssues() ([]*Issue, error)
+	Activities() ([]*Activities, error)
 }
 
 func WrongStatusCodeError(statusCode int, statusText string) error {
@@ -102,12 +103,13 @@ func (r *ClientManager) Issue(issueID string) (*IssueContainer, error) {
 	return issue, nil
 }
 
-func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment string) (*TimeEntryBodyResponse, error) {
+func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment string, activityID string) (*TimeEntryBodyResponse, error) {
 	requestBody := &TimeEntryBody{
 		&TimeEntry{
 			issueID,
 			hours,
 			comment,
+			activityID,
 		},
 	}
 

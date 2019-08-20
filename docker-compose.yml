@@ -12,6 +12,8 @@ services:
   redmine-bot:
     build: .
     command: /app/main
+    volumes:
+      - $GOPATH/pkg/mod:/go/pkg/mod
     links:
       - redis_db
     depends_on:
