@@ -6,8 +6,6 @@ import (
 	"os"
 
 	"github.com/alphatroya/redmine-helper-bot/storage"
-
-	"github.com/alphatroya/redmine-helper-bot/redmine"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -29,8 +27,7 @@ func main() {
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	clientManager := redmine.NewClientManager(&http.Client{})
-	handler := UpdateHandler{bot, redisClient, clientManager}
+	handler := UpdateHandler{bot, redisClient}
 
 	if os.Getenv("DEBUG") == "true" {
 		bot.Debug = true
