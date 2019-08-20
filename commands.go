@@ -21,11 +21,15 @@ type UpdateHandler struct {
 	client  redmine.Client
 }
 
-var commandHandler commands.Command
+var commandHandlers map[int64]commands.Command
+
+func init() {
+	commandHandlers = make(map[int64]commands.Command)
+}
 
 func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
-	commandBuilder := commands.NewBotCommandsBuilder(t.storage, t.client, chatID)
-	commandHandler = commandBuilder.Build(command, message, commandHandler)
+	commandBuilder := commands.NewBotCommandsBuilder(t.storage, t.client)
+	commandHandler := commandBuilder.Build(command, message, chatID)
 	result, err := commandHandler.Handle(message)
 	var newMessage tgbotapi.MessageConfig
 	if err != nil {
@@ -34,6 +38,7 @@ func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 		newMessage = tgbotapi.NewMessage(chatID, result.Message())
 	}
 	newMessage.ParseMode = tgbotapi.ModeMarkdown
+	commandHandlers[chatID] = commandHandler
 
 	_, err = t.bot.Send(newMessage)
 	if err != nil {
@@ -44,7 +49,8 @@ func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 func (t *UpdateHandler) HandleMessage(message string, chatID int64) {
 	var result *commands.CommandResult
 	var err error
-	if commandHandler == nil || commandHandler.IsCompleted() {
+	commandHandler, ok := commandHandlers[chatID]
+	if !ok || commandHandler == nil || commandHandler.IsCompleted() {
 		result, err = commands.NewUnknownCommand().Handle(message)
 	} else {
 		result, err = commandHandler.Handle(message)
