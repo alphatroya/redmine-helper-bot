@@ -19,6 +19,7 @@ type PartlyFillHoursCommand struct {
 	isHoursSet      bool
 	isCompleted     bool
 	issueID         string
+	activityID      string
 	hours           string
 	comment         string
 }
@@ -27,7 +28,7 @@ func (p *PartlyFillHoursCommand) IsCompleted() bool {
 	return p.isCompleted
 }
 
-func NewPartlyFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, chatID int64) *PartlyFillHoursCommand {
+func newPartlyFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, chatID int64) *PartlyFillHoursCommand {
 	return &PartlyFillHoursCommand{redmineClient: redmineClient, storage: storage, chatID: chatID}
 }
 
@@ -78,12 +79,21 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 		}
 		message += fmt.Sprintln("")
 	}
+	message += fmt.Sprintln("_Вы можете также ввести через пробел код активности, если хотите установить ее отличной от дефолтной (например \"54323 15\")._")
+	message += fmt.Sprintln("_Список кодов можно получить с помощью команды /activities_")
 	p.issuesRequested = true
 	return NewCommandResult(message), err
 }
 
 func (p *PartlyFillHoursCommand) saveIssueID(issueID string) (*CommandResult, error) {
 	issueID = strings.TrimLeft(issueID, "#")
+
+	parts := strings.Split(issueID, " ")
+	if len(parts) == 2 {
+		p.activityID = parts[1]
+		issueID = parts[0]
+	}
+
 	regex := regexp.MustCompile(`^[0-9]+$`)
 	if !regex.MatchString(issueID) {
 		return nil, fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
@@ -110,7 +120,25 @@ func (p *PartlyFillHoursCommand) setComment(comment string) (*CommandResult, err
 	}
 	p.isCompleted = true
 	p.comment = comment
-	plainCommand := newFillHoursCommand(p.storage, p.chatID, p.redmineClient)
-	command := []string{p.issueID, p.hours, p.comment}
-	return plainCommand.Handle(strings.Join(command, " "))
+
+	token, err := p.storage.GetToken(p.chatID)
+	if err != nil {
+		return nil, fmt.Errorf(WrongFillHoursTokenNilResponse)
+	}
+	p.redmineClient.SetToken(token)
+
+	host, err := p.storage.GetHost(p.chatID)
+	if err != nil {
+		return nil, fmt.Errorf(WrongFillHoursHostNilResponse)
+	}
+	p.redmineClient.SetHost(host)
+
+	requestBody, err := p.redmineClient.FillHoursRequest(p.issueID, p.hours, comment, p.activityID)
+	if err != nil {
+		return nil, err
+	}
+
+	issue, _ := p.redmineClient.Issue(p.issueID)
+
+	return NewCommandResult(SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, issue, requestBody.TimeEntry.Hours, host)), nil
 }

@@ -5,9 +5,10 @@ type TimeEntryBody struct {
 }
 
 type TimeEntry struct {
-	IssueID  string `json:"issue_id"`
-	Hours    string `json:"hours"`
-	Comments string `json:"comments"`
+	IssueID    string `json:"issue_id"`
+	Hours      string `json:"hours"`
+	Comments   string `json:"comments"`
+	ActivityID string `json:"activity_id,omitempty"`
 }
 
 type TimeEntryBodyResponse struct {

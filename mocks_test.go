@@ -16,7 +16,7 @@ func (r *RedmineClientMock) AssignedIssues() ([]*redmine.Issue, error) {
 	panic("implement me")
 }
 
-func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string) (*redmine.TimeEntryBodyResponse, error) {
+func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string, activityID string) (*redmine.TimeEntryBodyResponse, error) {
 	return r.response.(*redmine.TimeEntryBodyResponse), r.responseError
 }
 
