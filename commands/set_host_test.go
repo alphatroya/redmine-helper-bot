@@ -7,7 +7,7 @@ import (
 	"github.com/alphatroya/redmine-helper-bot/mocks"
 )
 
-func TestSetHostCommand(t *testing.T) {
+func TestSetHostCommand_Handle(t *testing.T) {
 	data := []struct {
 		text     string
 		chatID   int64
@@ -31,5 +31,13 @@ func TestSetHostCommand(t *testing.T) {
 		if err != nil && err.Error() != message.error.Error() {
 			t.Errorf("Wrong error response, expected: %s, got: %s", message.error, err.Error())
 		}
+	}
+}
+
+func TestSetHostCommand_IsCompleted(t *testing.T) {
+	storageMock := mocks.NewStorageMock()
+	command := newSetHostCommand(storageMock, 0)
+	if command.IsCompleted() != true {
+		t.Error("set host command should always be completed")
 	}
 }

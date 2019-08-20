@@ -1,13 +1,13 @@
 package commands
 
-type Intro struct {
+type IntroCommand struct {
 }
 
-func newIntroCommand() *Intro {
-	return &Intro{}
+func newIntroCommand() *IntroCommand {
+	return &IntroCommand{}
 }
 
-func (i Intro) Handle(message string) (*CommandResult, error) {
+func (i IntroCommand) Handle(message string) (*CommandResult, error) {
 	return NewCommandResult(`
 *Бот активирован*
 
@@ -22,6 +22,6 @@ func (i Intro) Handle(message string) (*CommandResult, error) {
 `), nil
 }
 
-func (i Intro) IsCompleted() bool {
+func (i IntroCommand) IsCompleted() bool {
 	return true
 }

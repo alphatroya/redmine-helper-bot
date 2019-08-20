@@ -7,7 +7,7 @@ import (
 	"github.com/alphatroya/redmine-helper-bot/mocks"
 )
 
-func TestSetTokenCommand(t *testing.T) {
+func TestSetTokenCommand_Handle(t *testing.T) {
 	data := []struct {
 		text     string
 		chatID   int64
@@ -30,5 +30,13 @@ func TestSetTokenCommand(t *testing.T) {
 		if err != nil && err.Error() != message.error.Error() {
 			t.Errorf("Wrong error response, expected: %s, got: %s", message.error, err.Error())
 		}
+	}
+}
+
+func TestSetTokenCommand_IsCompleted(t *testing.T) {
+	storageMock := mocks.NewStorageMock()
+	command := newSetTokenCommand(storageMock, 0)
+	if command.IsCompleted() != true {
+		t.Error("set token command should always be completed")
 	}
 }
