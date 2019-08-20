@@ -3,7 +3,7 @@ package commands
 import "testing"
 
 func TestIntro_Handle(t *testing.T) {
-	sut := Intro{}
+	sut := IntroCommand{}
 	result, err := sut.Handle("")
 	expectedResult := `
 *Бот активирован*
@@ -26,7 +26,7 @@ func TestIntro_Handle(t *testing.T) {
 }
 
 func TestIntro_IsCompleted(t *testing.T) {
-	sut := Intro{}
+	sut := IntroCommand{}
 	if sut.IsCompleted() != true {
 		t.Errorf("intro command should always be completed")
 	}

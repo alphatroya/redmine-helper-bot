@@ -20,15 +20,16 @@ func NewBotCommandsBuilder(storage storage.Manager) *BotCommandsBuilder {
 }
 
 func (b BotCommandsBuilder) Build(command string, message string, chatID int64) Command {
-	redmineClient := redmine.NewClientManager(&http.Client{})
 	switch command {
 	case "token":
 		return newSetTokenCommand(b.storage, chatID)
 	case "host":
 		return newSetHostCommand(b.storage, chatID)
 	case "fillhours":
+		redmineClient := redmine.NewClientManager(&http.Client{})
 		return newPartlyFillHoursCommand(redmineClient, b.storage, chatID)
 	case "activities":
+		redmineClient := redmine.NewClientManager(&http.Client{})
 		return newActivitiesCommand(redmineClient, b.storage, chatID)
 	case "start":
 		return newIntroCommand()
