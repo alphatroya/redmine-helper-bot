@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"net/http"
+
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/alphatroya/redmine-helper-bot/storage"
 )
@@ -10,24 +12,24 @@ type Builder interface {
 }
 
 type BotCommandsBuilder struct {
-	storage       storage.Manager
-	redmineClient redmine.Client
+	storage storage.Manager
 }
 
-func NewBotCommandsBuilder(storage storage.Manager, redmineClient redmine.Client) *BotCommandsBuilder {
-	return &BotCommandsBuilder{storage: storage, redmineClient: redmineClient}
+func NewBotCommandsBuilder(storage storage.Manager) *BotCommandsBuilder {
+	return &BotCommandsBuilder{storage: storage}
 }
 
 func (b BotCommandsBuilder) Build(command string, message string, chatID int64) Command {
+	redmineClient := redmine.NewClientManager(&http.Client{})
 	switch command {
 	case "token":
 		return newSetTokenCommand(b.storage, chatID)
 	case "host":
 		return newSetHostCommand(b.storage, chatID)
 	case "fillhours":
-		return newPartlyFillHoursCommand(b.redmineClient, b.storage, chatID)
+		return newPartlyFillHoursCommand(redmineClient, b.storage, chatID)
 	case "activities":
-		return newActivitiesCommand(b.redmineClient, b.storage, chatID)
+		return newActivitiesCommand(redmineClient, b.storage, chatID)
 	case "start":
 		return newIntroCommand()
 	case "stop":

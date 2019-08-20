@@ -25,7 +25,7 @@ func setup() {
 	botMock = &MockBotSender{}
 	redisMock = mocks.NewStorageMock()
 	redmineMock = &RedmineClientMock{"", "", nil, nil}
-	handler = &UpdateHandler{botMock, redisMock, redmineMock}
+	handler = &UpdateHandler{botMock, redisMock}
 }
 
 func tearDown() {

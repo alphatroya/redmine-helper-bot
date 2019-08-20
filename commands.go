@@ -7,7 +7,6 @@ import (
 
 	"github.com/alphatroya/redmine-helper-bot/storage"
 
-	"github.com/alphatroya/redmine-helper-bot/redmine"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 )
 
@@ -18,7 +17,6 @@ type BotSender interface {
 type UpdateHandler struct {
 	bot     BotSender
 	storage storage.Manager
-	client  redmine.Client
 }
 
 var commandHandlers map[int64]commands.Command
@@ -28,7 +26,7 @@ func init() {
 }
 
 func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
-	commandBuilder := commands.NewBotCommandsBuilder(t.storage, t.client)
+	commandBuilder := commands.NewBotCommandsBuilder(t.storage)
 	commandHandler := commandBuilder.Build(command, message, chatID)
 	result, err := commandHandler.Handle(message)
 	var newMessage tgbotapi.MessageConfig
