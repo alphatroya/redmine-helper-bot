@@ -13,7 +13,7 @@ services:
     build: .
     command: /app/main
     volumes:
-      - $GOPATH/pkg/mod:/go/pkg/mod
+      - $GOPATH/pkg:/go/pkg
     links:
       - redis_db
     depends_on:
@@ -22,4 +22,5 @@ services:
       - TELEGRAM_BOT_KEY=$TELEGRAM_BOT_KEY
       - DEBUG=true
       - REDIS_URL=redis://redis_db:6379
+      - GOPATH=/go
 
