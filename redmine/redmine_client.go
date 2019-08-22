@@ -40,30 +40,13 @@ func (r *ClientManager) SetHost(host string) {
 }
 
 func (r *ClientManager) AssignedIssues() ([]*Issue, error) {
-	request, err := http.NewRequest("GET", r.host+"/issues.json?assigned_to_id=me", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	r.configure(request)
-	response, err := r.networkClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode >= 400 {
-		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
-	}
-
-	readBytes, err := ioutil.ReadAll(response.Body)
+	bytesResponse, err := r.sendMessage(nil, "GET", r.host+"/issues.json?assigned_to_id=me")
 	if err != nil {
 		return nil, err
 	}
 
 	issues := new(IssuesList)
-	err = json.Unmarshal(readBytes, issues)
+	err = json.Unmarshal(bytesResponse, issues)
 	if err != nil {
 		return nil, err
 	}
@@ -72,34 +55,15 @@ func (r *ClientManager) AssignedIssues() ([]*Issue, error) {
 }
 
 func (r *ClientManager) Issue(issueID string) (*IssueContainer, error) {
-	request, err := http.NewRequest("GET", r.host+"/issues/"+issueID+".json", nil)
+	bytesResponse, err := r.sendMessage(nil, "GET", r.host+"/issues/"+issueID+".json")
 	if err != nil {
 		return nil, err
 	}
-
-	r.configure(request)
-	response, err := r.networkClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode >= 400 {
-		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
-	}
-
-	readBytes, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	issue := new(IssueContainer)
-	err = json.Unmarshal(readBytes, issue)
+	err = json.Unmarshal(bytesResponse, issue)
 	if err != nil {
 		return nil, err
 	}
-
 	return issue, nil
 }
 
@@ -118,24 +82,7 @@ func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment s
 		return nil, err
 	}
 
-	request, err := http.NewRequest("POST", r.host+"/time_entries.json", bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
-	}
-
-	r.configure(request)
-	response, err := r.networkClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode >= 400 {
-		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
-	}
-
-	bytesResponse, err := ioutil.ReadAll(response.Body)
+	bytesResponse, err := r.sendMessage(bytes.NewBuffer(body), "POST", r.host+"/time_entries.json")
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +95,20 @@ func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment s
 	return result, nil
 }
 
-func (r *ClientManager) configure(request *http.Request) {
+func (r *ClientManager) sendMessage(bodyBuffer *bytes.Buffer, requestMethod string, requestURL string) ([]byte, error) {
+	request, err := http.NewRequest(requestMethod, requestURL, bodyBuffer)
+	if err != nil {
+		return nil, err
+	}
 	request.Header.Set("X-Redmine-API-Key", r.token)
 	request.Header.Set("Content-Type", "application/json")
+	response, err := r.networkClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode >= 400 {
+		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
+	}
+	return ioutil.ReadAll(response.Body)
 }
