@@ -7,11 +7,8 @@ import (
 )
 
 const (
-	WrongFillHoursTokenNilResponse               = "Токен доступа для текущего пользователя не найден"
-	WrongFillHoursHostNilResponse                = "Адрес сервера не найден"
-	WrongFillHoursWrongIssueIDResponse           = "Введен неправильный номер задачи"
-	WrongFillHoursWrongHoursCountResponse        = "Введено неправильное количество часов"
-	WrongFillHoursWrongNumberOfArgumentsResponse = "Неправильное количество аргументов"
+	WrongFillHoursWrongIssueIDResponse    = "Введен неправильный номер задачи"
+	WrongFillHoursWrongHoursCountResponse = "Введено неправильное количество часов"
 )
 
 func SuccessFillHoursMessageResponse(issueID int, issue *redmine.IssueContainer, hours float32, host string) string {

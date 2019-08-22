@@ -14,7 +14,7 @@ type Activities struct {
 }
 
 func (r *ClientManager) Activities() ([]*Activities, error) {
-	bytesResponse, err := r.sendMessage(nil, "GET", r.host+"/enumerations/time_entry_activities.json")
+	bytesResponse, err := r.sendMessage(nil, "GET", "/enumerations/time_entry_activities.json")
 	if err != nil {
 		return nil, err
 	}

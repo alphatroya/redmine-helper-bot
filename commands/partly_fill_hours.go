@@ -49,16 +49,6 @@ func (p *PartlyFillHoursCommand) Handle(message string) (*CommandResult, error) 
 }
 
 func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResult, error) {
-	token, err := p.storage.GetToken(p.chatID)
-	if err != nil {
-		return nil, fmt.Errorf(WrongFillHoursTokenNilResponse)
-	}
-	p.redmineClient.SetToken(token)
-	host, err := p.storage.GetHost(p.chatID)
-	if err != nil {
-		return nil, fmt.Errorf(WrongFillHoursHostNilResponse)
-	}
-	p.redmineClient.SetHost(host)
 	issues, err := p.redmineClient.AssignedIssues()
 	if err != nil {
 		return nil, err
@@ -121,17 +111,7 @@ func (p *PartlyFillHoursCommand) setComment(comment string) (*CommandResult, err
 	p.isCompleted = true
 	p.comment = comment
 
-	token, err := p.storage.GetToken(p.chatID)
-	if err != nil {
-		return nil, fmt.Errorf(WrongFillHoursTokenNilResponse)
-	}
-	p.redmineClient.SetToken(token)
-
-	host, err := p.storage.GetHost(p.chatID)
-	if err != nil {
-		return nil, fmt.Errorf(WrongFillHoursHostNilResponse)
-	}
-	p.redmineClient.SetHost(host)
+	host, _ := p.storage.GetHost(p.chatID)
 
 	requestBody, err := p.redmineClient.FillHoursRequest(p.issueID, p.hours, comment, p.activityID)
 	if err != nil {

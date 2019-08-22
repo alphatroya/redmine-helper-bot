@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 type Client interface {
-	SetToken(token string)
-	SetHost(host string)
 	FillHoursRequest(issueID string, hours string, comment string, activityID string) (*TimeEntryBodyResponse, error)
 	Issue(issueID string) (*IssueContainer, error)
 	AssignedIssues() ([]*Issue, error)
@@ -22,25 +22,17 @@ func WrongStatusCodeError(statusCode int, statusText string) error {
 }
 
 type ClientManager struct {
-	token         string
-	host          string
 	networkClient HTTPClient
+	storage       storage.Manager
+	chatID        int64
 }
 
-func NewClientManager(networkClient HTTPClient) *ClientManager {
-	return &ClientManager{networkClient: networkClient}
-}
-
-func (r *ClientManager) SetToken(token string) {
-	r.token = token
-}
-
-func (r *ClientManager) SetHost(host string) {
-	r.host = host
+func NewClientManager(networkClient HTTPClient, storage storage.Manager, chatID int64) *ClientManager {
+	return &ClientManager{networkClient: networkClient, storage: storage, chatID: chatID}
 }
 
 func (r *ClientManager) AssignedIssues() ([]*Issue, error) {
-	bytesResponse, err := r.sendMessage(nil, "GET", r.host+"/issues.json?assigned_to_id=me")
+	bytesResponse, err := r.sendMessage(nil, "GET", "/issues.json?assigned_to_id=me")
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +47,7 @@ func (r *ClientManager) AssignedIssues() ([]*Issue, error) {
 }
 
 func (r *ClientManager) Issue(issueID string) (*IssueContainer, error) {
-	bytesResponse, err := r.sendMessage(nil, "GET", r.host+"/issues/"+issueID+".json")
+	bytesResponse, err := r.sendMessage(nil, "GET", "/issues/"+issueID+".json")
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +74,7 @@ func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment s
 		return nil, err
 	}
 
-	bytesResponse, err := r.sendMessage(bytes.NewBuffer(body), "POST", r.host+"/time_entries.json")
+	bytesResponse, err := r.sendMessage(bytes.NewBuffer(body), "POST", "/time_entries.json")
 	if err != nil {
 		return nil, err
 	}
@@ -96,11 +88,19 @@ func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment s
 }
 
 func (r *ClientManager) sendMessage(bodyBuffer *bytes.Buffer, requestMethod string, requestURL string) ([]byte, error) {
-	request, err := http.NewRequest(requestMethod, requestURL, bodyBuffer)
+	host, err := r.storage.GetHost(r.chatID)
+	if err != nil {
+		return nil, fmt.Errorf("Адрес сервера не задан! Пожалуйста задайте его с помощью команды /host <адрес сервера>")
+	}
+	request, err := http.NewRequest(requestMethod, host+requestURL, bodyBuffer)
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Set("X-Redmine-API-Key", r.token)
+	token, err := r.storage.GetToken(r.chatID)
+	if err != nil {
+		return nil, fmt.Errorf("Токен доступа к API не задан! Пожалуйста задайте его с помощью команды /token <токен>")
+	}
+	request.Header.Set("X-Redmine-API-Key", token)
 	request.Header.Set("Content-Type", "application/json")
 	response, err := r.networkClient.Do(request)
 	if err != nil {
