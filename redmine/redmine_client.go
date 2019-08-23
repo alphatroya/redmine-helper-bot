@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 
@@ -87,7 +88,7 @@ func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment s
 	return result, nil
 }
 
-func (r *ClientManager) sendMessage(bodyBuffer *bytes.Buffer, requestMethod string, requestURL string) ([]byte, error) {
+func (r *ClientManager) sendMessage(bodyBuffer io.Reader, requestMethod string, requestURL string) ([]byte, error) {
 	host, err := r.storage.GetHost(r.chatID)
 	if err != nil {
 		return nil, fmt.Errorf("Адрес сервера не задан! Пожалуйста задайте его с помощью команды /host <адрес сервера>")
