@@ -5,8 +5,6 @@ import (
 
 	"github.com/alphatroya/redmine-helper-bot/commands"
 	"github.com/alphatroya/redmine-helper-bot/mocks"
-
-	"github.com/alphatroya/redmine-helper-bot/redmine"
 )
 
 func setupSubTest(t *testing.T) func(t *testing.T) {
@@ -127,12 +125,6 @@ func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
 	}
 }
 
-func newTimeEntryResponse(comments string, hours float32, ID int) *redmine.TimeEntryResponse {
-	return &redmine.TimeEntryResponse{Comments: comments, Hours: hours, Issue: struct {
-		ID int "json:\"id\""
-	}{ID: ID}}
-}
-
 func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
 	teardownSubTest := setupSubTest(t)
 	defer teardownSubTest(t)
@@ -142,11 +134,11 @@ func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
 		message  string
 		chatID   int64
 		expected string
-	}{"fillhours", "43212 8 Test", 44, commands.WrongFillHoursTokenNilResponse}
+	}{"fillhours", "43212 8 Test", 44, "Адрес сервера не задан! Пожалуйста задайте его с помощью команды /host <адрес сервера>"}
 
 	handler.Handle(input.command, input.message, input.chatID)
 	if input.expected != botMock.text {
-		t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
+		t.Errorf("Wrong response from fill hours method got: %s, expected: %s", botMock.text, input.expected)
 	}
 }
 
@@ -159,7 +151,8 @@ func TestHandleFillHoursNilHostFailCommand(t *testing.T) {
 		message  string
 		chatID   int64
 		expected string
-	}{"fillhours", "43212 8 Test", 44, commands.WrongFillHoursHostNilResponse}
+	}{"fillhours", "43212 8 Test", 44, "Адрес сервера не задан! Пожалуйста задайте его с помощью команды /host <адрес сервера>" +
+		""}
 
 	redisMock.SetToken("TestToken", input.chatID)
 	handler.Handle(input.command, input.message, input.chatID)

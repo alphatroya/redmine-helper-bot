@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 type Client interface {
-	SetToken(token string)
-	SetHost(host string)
 	FillHoursRequest(issueID string, hours string, comment string, activityID string) (*TimeEntryBodyResponse, error)
 	Issue(issueID string) (*IssueContainer, error)
 	AssignedIssues() ([]*Issue, error)
@@ -22,48 +23,23 @@ func WrongStatusCodeError(statusCode int, statusText string) error {
 }
 
 type ClientManager struct {
-	token         string
-	host          string
 	networkClient HTTPClient
+	storage       storage.Manager
+	chatID        int64
 }
 
-func NewClientManager(networkClient HTTPClient) *ClientManager {
-	return &ClientManager{networkClient: networkClient}
-}
-
-func (r *ClientManager) SetToken(token string) {
-	r.token = token
-}
-
-func (r *ClientManager) SetHost(host string) {
-	r.host = host
+func NewClientManager(networkClient HTTPClient, storage storage.Manager, chatID int64) *ClientManager {
+	return &ClientManager{networkClient: networkClient, storage: storage, chatID: chatID}
 }
 
 func (r *ClientManager) AssignedIssues() ([]*Issue, error) {
-	request, err := http.NewRequest("GET", r.host+"/issues.json?assigned_to_id=me", nil)
-	if err != nil {
-		return nil, err
-	}
-
-	r.configure(request)
-	response, err := r.networkClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode >= 400 {
-		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
-	}
-
-	readBytes, err := ioutil.ReadAll(response.Body)
+	bytesResponse, err := r.sendMessage(nil, "GET", "/issues.json?assigned_to_id=me")
 	if err != nil {
 		return nil, err
 	}
 
 	issues := new(IssuesList)
-	err = json.Unmarshal(readBytes, issues)
+	err = json.Unmarshal(bytesResponse, issues)
 	if err != nil {
 		return nil, err
 	}
@@ -72,34 +48,15 @@ func (r *ClientManager) AssignedIssues() ([]*Issue, error) {
 }
 
 func (r *ClientManager) Issue(issueID string) (*IssueContainer, error) {
-	request, err := http.NewRequest("GET", r.host+"/issues/"+issueID+".json", nil)
+	bytesResponse, err := r.sendMessage(nil, "GET", "/issues/"+issueID+".json")
 	if err != nil {
 		return nil, err
 	}
-
-	r.configure(request)
-	response, err := r.networkClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode >= 400 {
-		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
-	}
-
-	readBytes, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	issue := new(IssueContainer)
-	err = json.Unmarshal(readBytes, issue)
+	err = json.Unmarshal(bytesResponse, issue)
 	if err != nil {
 		return nil, err
 	}
-
 	return issue, nil
 }
 
@@ -118,24 +75,7 @@ func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment s
 		return nil, err
 	}
 
-	request, err := http.NewRequest("POST", r.host+"/time_entries.json", bytes.NewBuffer(body))
-	if err != nil {
-		return nil, err
-	}
-
-	r.configure(request)
-	response, err := r.networkClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-
-	defer response.Body.Close()
-
-	if response.StatusCode >= 400 {
-		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
-	}
-
-	bytesResponse, err := ioutil.ReadAll(response.Body)
+	bytesResponse, err := r.sendMessage(bytes.NewBuffer(body), "POST", "/time_entries.json")
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +88,28 @@ func (r *ClientManager) FillHoursRequest(issueID string, hours string, comment s
 	return result, nil
 }
 
-func (r *ClientManager) configure(request *http.Request) {
-	request.Header.Set("X-Redmine-API-Key", r.token)
+func (r *ClientManager) sendMessage(bodyBuffer io.Reader, requestMethod string, requestURL string) ([]byte, error) {
+	host, err := r.storage.GetHost(r.chatID)
+	if err != nil {
+		return nil, fmt.Errorf("Адрес сервера не задан! Пожалуйста задайте его с помощью команды /host <адрес сервера>")
+	}
+	request, err := http.NewRequest(requestMethod, host+requestURL, bodyBuffer)
+	if err != nil {
+		return nil, err
+	}
+	token, err := r.storage.GetToken(r.chatID)
+	if err != nil {
+		return nil, fmt.Errorf("Токен доступа к API не задан! Пожалуйста задайте его с помощью команды /token <токен>")
+	}
+	request.Header.Set("X-Redmine-API-Key", token)
 	request.Header.Set("Content-Type", "application/json")
+	response, err := r.networkClient.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer response.Body.Close()
+	if response.StatusCode >= 400 {
+		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
+	}
+	return ioutil.ReadAll(response.Body)
 }

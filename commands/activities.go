@@ -18,18 +18,6 @@ func newActivitiesCommand(redmineClient redmine.Client, storage storage.Manager,
 }
 
 func (a Activities) Handle(message string) (*CommandResult, error) {
-	token, err := a.storage.GetToken(a.chatID)
-	if err != nil {
-		return nil, fmt.Errorf(WrongFillHoursTokenNilResponse)
-	}
-	a.redmineClient.SetToken(token)
-
-	host, err := a.storage.GetHost(a.chatID)
-	if err != nil {
-		return nil, fmt.Errorf(WrongFillHoursHostNilResponse)
-	}
-	a.redmineClient.SetHost(host)
-
 	activities, err := a.redmineClient.Activities()
 	if err != nil {
 		return nil, err
