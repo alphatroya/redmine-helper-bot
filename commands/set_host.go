@@ -1,16 +1,10 @@
 package commands
 
 import (
-	"fmt"
 	"net/url"
 	"strings"
 
 	"github.com/alphatroya/redmine-helper-bot/storage"
-)
-
-const (
-	wrongHostMessageResponse   = "Неправильное количество аргументов"
-	successHostMessageResponse = "Адрес сервера успешно обновлен"
 )
 
 type SetHostCommand struct {
@@ -27,14 +21,14 @@ func newSetHostCommand(storage storage.Manager, chatID int64) *SetHostCommand {
 }
 
 func (s SetHostCommand) Handle(message string) (*CommandResult, error) {
-	splittedMessage := strings.Split(message, " ")
-	if len(splittedMessage) > 1 || len(message) == 0 {
-		return nil, fmt.Errorf(wrongHostMessageResponse)
+	split := strings.Split(message, " ")
+	if len(split) > 1 || len(message) == 0 {
+		return NewCommandResult("Неправильное количество аргументов, введите адрес в формате `/host <адрес сервера>`(например, `/host https://google.ru`)"), nil
 	}
-	_, err := url.ParseRequestURI(splittedMessage[0])
+	_, err := url.ParseRequestURI(split[0])
 	if err != nil {
 		return nil, err
 	}
-	s.storage.SetHost(splittedMessage[0], s.chatID)
-	return NewCommandResult(successHostMessageResponse), nil
+	s.storage.SetHost(split[0], s.chatID)
+	return NewCommandResult("Адрес сервера успешно обновлен"), nil
 }

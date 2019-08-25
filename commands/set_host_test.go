@@ -8,15 +8,16 @@ import (
 )
 
 func TestSetHostCommand_Handle(t *testing.T) {
+	wrongArgumentText := "Неправильное количество аргументов, введите адрес в формате `/host <адрес сервера>`(например, `/host https://google.ru`)"
 	data := []struct {
 		text     string
 		chatID   int64
 		expected string
 		error    error
 	}{
-		{"", 1, "", fmt.Errorf("Неправильное количество аргументов")},
-		{" ", 1, "", fmt.Errorf("Неправильное количество аргументов")},
-		{"test test", 1, "", fmt.Errorf("Неправильное количество аргументов")},
+		{"", 1, wrongArgumentText, nil},
+		{" ", 1, wrongArgumentText, nil},
+		{"test test", 1, wrongArgumentText, nil},
 		{"test", 1, "", fmt.Errorf("parse test: invalid URI for request")},
 		{"https://www.google.com", 1, "Адрес сервера успешно обновлен", nil},
 	}

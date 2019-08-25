@@ -1,15 +1,9 @@
 package commands
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/alphatroya/redmine-helper-bot/storage"
-)
-
-const (
-	WrongTokenMessageResponse   = "Неправильное количество аргументов"
-	SuccessTokenMessageResponse = "Токен успешно обновлен"
 )
 
 type SetTokenCommand struct {
@@ -28,8 +22,8 @@ func newSetTokenCommand(storage storage.Manager, chatID int64) *SetTokenCommand 
 func (s SetTokenCommand) Handle(message string) (*CommandResult, error) {
 	splittedMessage := strings.Split(message, " ")
 	if len(splittedMessage) > 1 || len(message) == 0 {
-		return nil, fmt.Errorf(WrongTokenMessageResponse)
+		return NewCommandResult("Неправильное количество аргументов, введите токен доступа к АПИ в формате `/token <токен>`"), nil
 	}
 	s.storage.SetToken(splittedMessage[0], s.chatID)
-	return NewCommandResult(SuccessTokenMessageResponse), nil
+	return NewCommandResult("Токен успешно обновлен"), nil
 }
