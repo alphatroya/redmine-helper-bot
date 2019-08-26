@@ -3,7 +3,6 @@ package main
 import (
 	"testing"
 
-	"github.com/alphatroya/redmine-helper-bot/commands"
 	"github.com/alphatroya/redmine-helper-bot/mocks"
 )
 
@@ -34,20 +33,22 @@ func tearDown() {
 }
 
 func TestTokenRequest(t *testing.T) {
+	const wrongHostArgumentsText = "Неправильное количество аргументов, введите адрес в формате `/host <адрес сервера>`(например, `/host https://google.ru`)"
+	const wrongTokenArgumentsCountText = "Неправильное количество аргументов, введите токен доступа к АПИ в формате `/token <токен>`"
 	data := []struct {
 		command  string
 		message  string
 		chatID   int64
 		expected string
 	}{
-		{"token", "", 1, commands.WrongTokenMessageResponse},
-		{"token", "test test", 1, commands.WrongTokenMessageResponse},
-		{"token", "fdsjfdsj", 1, commands.SuccessTokenMessageResponse},
-		{"token", "  ", 1, commands.WrongTokenMessageResponse},
+		{"token", "", 1, wrongTokenArgumentsCountText},
+		{"token", "test test", 1, wrongTokenArgumentsCountText},
+		{"token", "fdsjfdsj", 1, "Токен успешно обновлен"},
+		{"token", "  ", 1, wrongTokenArgumentsCountText},
 		{"", "qwertyu", 1, "Введена неправильная команда"},
-		{"host", "", 1, "Неправильное количество аргументов"},
-		{"host", " ", 1, "Неправильное количество аргументов"},
-		{"host", "test test", 1, "Неправильное количество аргументов"},
+		{"host", "", 1, wrongHostArgumentsText},
+		{"host", " ", 1, wrongHostArgumentsText},
+		{"host", "test test", 1, wrongHostArgumentsText},
 		{"host", "test", 1, "parse test: invalid URI for request"},
 		{"host", "https://www.google.com", 1, "Адрес сервера успешно обновлен"},
 	}

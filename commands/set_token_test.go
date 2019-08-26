@@ -1,23 +1,23 @@
 package commands
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/alphatroya/redmine-helper-bot/mocks"
 )
 
 func TestSetTokenCommand_Handle(t *testing.T) {
+	const wrongArgumentsCountText = "Неправильное количество аргументов, введите токен доступа к АПИ в формате `/token <токен>`"
 	data := []struct {
 		text     string
 		chatID   int64
 		expected string
 		error    error
 	}{
-		{"", 1, "", fmt.Errorf(WrongTokenMessageResponse)},
-		{"test test", 1, "", fmt.Errorf(WrongTokenMessageResponse)},
-		{"fdsjfdsj", 1, SuccessTokenMessageResponse, nil},
-		{"  ", 1, "", fmt.Errorf(WrongTokenMessageResponse)},
+		{"", 1, wrongArgumentsCountText, nil},
+		{"test test", 1, wrongArgumentsCountText, nil},
+		{"fdsjfdsj", 1, "Токен успешно обновлен", nil},
+		{"  ", 1, wrongArgumentsCountText, nil},
 	}
 
 	for _, message := range data {
