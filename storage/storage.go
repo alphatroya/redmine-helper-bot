@@ -13,10 +13,16 @@ type Manager interface {
 	GetToken(int64) (string, error)
 	SetHost(host string, chat int64)
 	GetHost(chat int64) (string, error)
+	ResetData(chat int64) error
 }
 
 type RedisStorage struct {
 	redis redisInstance
+}
+
+func (r RedisStorage) ResetData(chat int64) error {
+	chatString := fmt.Sprint(chat)
+	return r.redis.Del(chatString+"_token", chatString+"_host").Err()
 }
 
 func (r RedisStorage) SetToken(token string, chat int64) {
@@ -51,4 +57,5 @@ func NewStorageInstance(urlEnvironment string) (Manager, error) {
 type redisInstance interface {
 	Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd
 	Get(key string) *redis.StringCmd
+	Del(keys ...string) *redis.IntCmd
 }

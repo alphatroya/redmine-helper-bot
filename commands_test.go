@@ -15,13 +15,11 @@ func setupSubTest(t *testing.T) func(t *testing.T) {
 
 var botMock *MockBotSender
 var redisMock *mocks.StorageMock
-var redmineMock *RedmineClientMock
 var handler *UpdateHandler
 
 func setup() {
 	botMock = &MockBotSender{}
 	redisMock = mocks.NewStorageMock()
-	redmineMock = &RedmineClientMock{"", "", nil, nil}
 	handler = &UpdateHandler{botMock, redisMock}
 }
 
@@ -29,7 +27,6 @@ func tearDown() {
 	botMock = nil
 	redisMock = nil
 	handler = nil
-	redmineMock = nil
 }
 
 func TestTokenRequest(t *testing.T) {

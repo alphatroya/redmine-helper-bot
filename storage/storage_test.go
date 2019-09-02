@@ -17,6 +17,13 @@ func newRedisMock() *RedisMock {
 	return &RedisMock{mockStorage: make(map[string]string)}
 }
 
+func (t *RedisMock) Del(keys ...string) *redis.IntCmd {
+	for _, key := range keys {
+		t.mockStorage[key] = ""
+	}
+	return redis.NewIntCmd()
+}
+
 func (t *RedisMock) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
 	t.mockStorage[key] = value.(string)
 	return redis.NewStatusCmd(value)
@@ -65,5 +72,23 @@ func TestTokenStorage(t *testing.T) {
 	}
 	if restoredToken != token {
 		t.Errorf("getting value from redis failed, expected: \"%s\", got: \"%s\"", token, restoredToken)
+	}
+}
+
+func TestRedisStorage_ResetData(t *testing.T) {
+	token := "d3i3j423432"
+	var chat int64 = 5
+	mock := newRedisMock()
+	sut := RedisStorage{mock}
+	sut.SetToken(token, chat)
+	sut.SetHost("https://google.com", chat)
+
+	err := sut.ResetData(chat)
+	if err != nil {
+		t.Errorf("reset data should no reset data, got err: %s", err)
+	}
+
+	if mock.mockStorage["5_token"] != "" || mock.mockStorage["5_host"] != "" {
+		t.Errorf("storage data is not nil after resetting")
 	}
 }
