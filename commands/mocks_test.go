@@ -5,6 +5,10 @@ import "github.com/alphatroya/redmine-helper-bot/redmine"
 type StorageMock struct {
 }
 
+func (s StorageMock) ResetData(chat int64) error {
+	panic("implement me")
+}
+
 func (s StorageMock) SetToken(token string, chat int64) {
 	panic("implement me")
 }

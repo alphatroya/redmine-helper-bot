@@ -34,7 +34,7 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 	case "start":
 		return newIntroCommand()
 	case "stop":
-		return newStopCommand()
+		return newStopCommand(b.storage, chatID)
 	default:
 		return NewUnknownCommand()
 	}

@@ -7,6 +7,12 @@ type StorageMock struct {
 	storageHost  map[int64]string
 }
 
+func (r *StorageMock) ResetData(chat int64) error {
+	r.storageHost[chat] = ""
+	r.storageToken[chat] = ""
+	return nil
+}
+
 func (r *StorageMock) StorageHost() map[int64]string {
 	return r.storageHost
 }
