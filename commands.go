@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"sync"
 
 	"github.com/alphatroya/redmine-helper-bot/commands"
 
@@ -19,24 +20,27 @@ type UpdateHandler struct {
 	storage storage.Manager
 }
 
-var commandHandlers map[int64]commands.Command
-
-func init() {
-	commandHandlers = make(map[int64]commands.Command)
-}
+var commandHandlers = struct {
+	sync.RWMutex
+	handlers map[int64]commands.Command
+}{handlers: make(map[int64]commands.Command)}
 
 func (t *UpdateHandler) Handle(command string, message string, chatID int64) {
 	commandBuilder := commands.NewBotCommandsBuilder(t.storage)
 	commandHandler := commandBuilder.Build(command, message, chatID)
 	result, err := commandHandler.Handle(message)
-	commandHandlers[chatID] = commandHandler
+	commandHandlers.RLock()
+	commandHandlers.handlers[chatID] = commandHandler
+	commandHandlers.RUnlock()
 	t.sendMessage(chatID, result, err)
 }
 
 func (t *UpdateHandler) HandleMessage(message string, chatID int64) {
 	var result *commands.CommandResult
 	var err error
-	commandHandler, ok := commandHandlers[chatID]
+	commandHandlers.RLock()
+	commandHandler, ok := commandHandlers.handlers[chatID]
+	commandHandlers.RUnlock()
 	if !ok || commandHandler == nil || commandHandler.IsCompleted() {
 		result, err = commands.NewUnknownCommand().Handle(message)
 	} else {
