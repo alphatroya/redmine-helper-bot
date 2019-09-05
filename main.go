@@ -61,7 +61,12 @@ func configureWebHookObserving(updateHandler UpdateHandler, bot *tgbotapi.BotAPI
 		log.Printf("Telegram callback failed: %v", info)
 	}
 	updates := bot.ListenForWebhook("/" + bot.Token)
-	go http.ListenAndServe(":"+port, nil)
+	go func() {
+		err := http.ListenAndServe(":"+port, nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 	handleUpdates(updates, updateHandler)
 }
 
@@ -71,9 +76,9 @@ func handleUpdates(updates tgbotapi.UpdatesChannel, handler UpdateHandler) {
 			continue
 		}
 		if update.Message.IsCommand() {
-			handler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
+			go handler.Handle(update.Message.Command(), update.Message.CommandArguments(), update.Message.Chat.ID)
 		} else {
-			handler.HandleMessage(update.Message.Text, update.Message.Chat.ID)
+			go handler.HandleMessage(update.Message.Text, update.Message.Chat.ID)
 		}
 	}
 }
