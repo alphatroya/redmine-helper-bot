@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -32,18 +33,47 @@ func newPartlyFillHoursCommand(redmineClient redmine.Client, storage storage.Man
 	return &PartlyFillHoursCommand{redmineClient: redmineClient, storage: storage, chatID: chatID}
 }
 
+func NewFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, chatID int64, message string) (*PartlyFillHoursCommand, error) {
+	command := newPartlyFillHoursCommand(redmineClient, storage, chatID)
+	split := strings.Split(message, " ")
+	if len(split) < 3 {
+		return nil, fmt.Errorf("Введена неправильная команда")
+	}
+	command.issuesRequested = true
+	_, err := command.setIssueID(split[0])
+	if err != nil {
+		return nil, err
+	}
+	_, err = command.setHours(split[1])
+	if err != nil {
+		return nil, err
+	}
+	_, err = command.setComment(strings.Join(split[2:], " "))
+	if err != nil {
+		return nil, err
+	}
+	return command, nil
+}
+
 func (p *PartlyFillHoursCommand) Handle(message string) (*CommandResult, error) {
 	if p.isCompleted {
 		return NewCommandResult("Операция выполнена"), nil
 	}
+	if len(p.comment) > 0 {
+		return p.makeFillRequest()
+	}
 	if p.isHoursSet {
-		return p.setComment(message)
+		_, err := p.setComment(message)
+		if err != nil {
+			return nil, err
+		}
+		return p.makeFillRequest()
 	}
 	if p.isIssueIDSet {
-		return p.saveHours(message)
+		return p.setHours(message)
 	}
 	if p.issuesRequested {
-		return p.saveIssueID(message)
+		return p.setIssueID(message)
 	}
 	return p.makeIssuesRequest(message)
 }
@@ -75,7 +105,7 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	return NewCommandResult(message), err
 }
 
-func (p *PartlyFillHoursCommand) saveIssueID(issueID string) (*CommandResult, error) {
+func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, error) {
 	issueID = strings.TrimLeft(issueID, "#")
 
 	parts := strings.Split(issueID, " ")
@@ -93,7 +123,7 @@ func (p *PartlyFillHoursCommand) saveIssueID(issueID string) (*CommandResult, er
 	return NewCommandResult("Номер задачи установлен, введите число часов"), nil
 }
 
-func (p *PartlyFillHoursCommand) saveHours(hours string) (*CommandResult, error) {
+func (p *PartlyFillHoursCommand) setHours(hours string) (*CommandResult, error) {
 	_, err := strconv.ParseFloat(hours, 32)
 	if err != nil {
 		return nil, fmt.Errorf(WrongFillHoursWrongHoursCountResponse)
@@ -106,19 +136,19 @@ func (p *PartlyFillHoursCommand) saveHours(hours string) (*CommandResult, error)
 func (p *PartlyFillHoursCommand) setComment(comment string) (*CommandResult, error) {
 	comment = strings.TrimSpace(comment)
 	if len(comment) == 0 {
-		return NewCommandResult("Введена пустая команда"), nil
+		return nil, errors.New("Введена пустая команда")
 	}
-	p.isCompleted = true
 	p.comment = comment
+	return NewCommandResult("Комментарий сохранен"), nil
+}
 
+func (p *PartlyFillHoursCommand) makeFillRequest() (*CommandResult, error) {
 	host, _ := p.storage.GetHost(p.chatID)
-
-	requestBody, err := p.redmineClient.FillHoursRequest(p.issueID, p.hours, comment, p.activityID)
+	requestBody, err := p.redmineClient.FillHoursRequest(p.issueID, p.hours, p.comment, p.activityID)
 	if err != nil {
 		return nil, err
 	}
-
 	issue, _ := p.redmineClient.Issue(p.issueID)
-
+	p.isCompleted = true
 	return NewCommandResult(SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, issue, requestBody.TimeEntry.Hours, host)), nil
 }
