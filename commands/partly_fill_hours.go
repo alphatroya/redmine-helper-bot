@@ -102,7 +102,11 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	message += fmt.Sprintln("_Вы можете также ввести через пробел код активности, если хотите установить ее отличной от дефолтной (например \"54323 15\")._")
 	message += fmt.Sprintln("_Список кодов можно получить с помощью команды /activities_")
 	p.issuesRequested = true
-	return NewCommandResult(message), err
+	var buttons []string
+	for _, issue := range issues {
+		buttons = append(buttons, fmt.Sprintf("%d", issue.ID))
+	}
+	return NewCommandResultWithKeyboard(message, buttons), err
 }
 
 func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, error) {

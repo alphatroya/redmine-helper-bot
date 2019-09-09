@@ -52,12 +52,13 @@ func TestTokenRequest(t *testing.T) {
 
 	for _, message := range data {
 		teardownSubTest := setupSubTest(t)
-		defer teardownSubTest(t)
 
 		handler.Handle(message.command, message.message, message.chatID)
 		if botMock.text != message.expected {
 			t.Errorf("Wrong response command: %s, arguments: %s, expected: %s, received: %s", message.command, message.message, message.expected, botMock.text)
 		}
+
+		teardownSubTest(t)
 	}
 }
 

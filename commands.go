@@ -53,8 +53,24 @@ func (t *UpdateHandler) sendMessage(chatID int64, result *commands.CommandResult
 	var newMessage tgbotapi.MessageConfig
 	if err != nil {
 		newMessage = tgbotapi.NewMessage(chatID, err.Error())
+		newMessage.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 	} else {
 		newMessage = tgbotapi.NewMessage(chatID, result.Message())
+		buttons := result.Buttons()
+		if len(buttons) != 0 {
+			var rows [][]tgbotapi.KeyboardButton
+			var keyboards []tgbotapi.KeyboardButton
+			for _, button := range buttons {
+				keyboards = append(keyboards, tgbotapi.NewKeyboardButton(button))
+				if len(keyboards) == 3 {
+					rows = append(rows, tgbotapi.NewKeyboardButtonRow(keyboards...))
+					keyboards = []tgbotapi.KeyboardButton{}
+				}
+			}
+			newMessage.ReplyMarkup = tgbotapi.NewReplyKeyboard(rows...)
+		} else {
+			newMessage.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+		}
 	}
 	newMessage.ParseMode = tgbotapi.ModeMarkdown
 	_, err = t.bot.Send(newMessage)
