@@ -104,13 +104,22 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	p.issuesRequested = true
 	var buttons []string
 	for _, issue := range issues {
-		buttons = append(buttons, fmt.Sprintf("%d", issue.ID))
+		buttons = append(buttons, fmt.Sprintf("#%d - %s", issue.ID, issue.Subject))
 	}
 	return NewCommandResultWithKeyboard(message, buttons), err
 }
 
 func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, error) {
 	issueID = strings.TrimLeft(issueID, "#")
+
+	if regexp.MustCompile(`^[0-9]+ - .+$`).MatchString(issueID) {
+		searchResult := regexp.MustCompile(`^[0-9]+`).Find([]byte(issueID))
+		if len(searchResult) != 0 {
+			p.issueID = string(searchResult)
+			p.isIssueIDSet = true
+			return NewCommandResult("Номер задачи установлен, введите число часов"), nil
+		}
+	}
 
 	parts := strings.Split(issueID, " ")
 	if len(parts) == 2 {

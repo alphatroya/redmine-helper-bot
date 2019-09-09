@@ -62,12 +62,13 @@ func (t *UpdateHandler) sendMessage(chatID int64, result *commands.CommandResult
 			var keyboards []tgbotapi.KeyboardButton
 			for _, button := range buttons {
 				keyboards = append(keyboards, tgbotapi.NewKeyboardButton(button))
-				if len(keyboards) == 3 {
+				if len(keyboards) == 2 {
 					rows = append(rows, tgbotapi.NewKeyboardButtonRow(keyboards...))
 					keyboards = []tgbotapi.KeyboardButton{}
 				}
 			}
 			newMessage.ReplyMarkup = tgbotapi.NewReplyKeyboard(rows...)
+			//newMessage.ReplyMarkup = tgbotapi.NewReplyKeyboard(keyboards)
 		} else {
 			newMessage.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
 		}
