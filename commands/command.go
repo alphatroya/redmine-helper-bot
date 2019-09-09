@@ -7,6 +7,11 @@ type Command interface {
 
 type CommandResult struct {
 	message string
+	buttons []string
+}
+
+func (c *CommandResult) Buttons() []string {
+	return c.buttons
 }
 
 func (c *CommandResult) Message() string {
@@ -15,4 +20,8 @@ func (c *CommandResult) Message() string {
 
 func NewCommandResult(message string) *CommandResult {
 	return &CommandResult{message: message}
+}
+
+func NewCommandResultWithKeyboard(message string, buttons []string) *CommandResult {
+	return &CommandResult{message: message, buttons: buttons}
 }
