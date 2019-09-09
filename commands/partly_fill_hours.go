@@ -115,9 +115,7 @@ func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, err
 	if regexp.MustCompile(`^[0-9]+ - .+$`).MatchString(issueID) {
 		searchResult := regexp.MustCompile(`^[0-9]+`).Find([]byte(issueID))
 		if len(searchResult) != 0 {
-			p.issueID = string(searchResult)
-			p.isIssueIDSet = true
-			return NewCommandResult("Номер задачи установлен, введите число часов"), nil
+			return p.issueIDSuccess(issueID)
 		}
 	}
 
@@ -131,9 +129,17 @@ func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, err
 	if !regex.MatchString(issueID) {
 		return nil, fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
 	}
+	return p.issueIDSuccess(issueID)
+}
+
+func (p *PartlyFillHoursCommand) issueIDSuccess(issueID string) (*CommandResult, error) {
 	p.issueID = issueID
 	p.isIssueIDSet = true
-	return NewCommandResult("Номер задачи установлен, введите число часов"), nil
+	var hourButtons []string
+	for i := 1; i <= 8; i++ {
+		hourButtons = append(hourButtons, fmt.Sprintf("%d", i))
+	}
+	return NewCommandResultWithKeyboard("Номер задачи установлен, введите число часов", hourButtons), nil
 }
 
 func (p *PartlyFillHoursCommand) setHours(hours string) (*CommandResult, error) {
