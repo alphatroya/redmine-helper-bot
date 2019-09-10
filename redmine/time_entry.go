@@ -15,6 +15,10 @@ type TimeEntryBodyResponse struct {
 	TimeEntry TimeEntryResponse `json:"time_entry"`
 }
 
+type TimeEntriesBodyResponse struct {
+	TimeEntries []*TimeEntryResponse `json:"time_entries"`
+}
+
 type TimeEntryResponse struct {
 	Activity struct {
 		ID   int    `json:"id"`

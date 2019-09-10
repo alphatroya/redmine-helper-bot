@@ -24,8 +24,13 @@ func (s StorageMock) GetHost(chat int64) (string, error) {
 }
 
 type RedmineMock struct {
-	mockActivities []*redmine.Activities
-	err            error
+	mockActivities  []*redmine.Activities
+	mockTimeEntries []*redmine.TimeEntryResponse
+	err             error
+}
+
+func (r RedmineMock) TodayTimeEntries() ([]*redmine.TimeEntryResponse, error) {
+	return r.mockTimeEntries, r.err
 }
 
 func (r RedmineMock) Activities() ([]*redmine.Activities, error) {

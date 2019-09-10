@@ -16,6 +16,7 @@ type Client interface {
 	Issue(issueID string) (*IssueContainer, error)
 	AssignedIssues() ([]*Issue, error)
 	Activities() ([]*Activities, error)
+	TodayTimeEntries() ([]*TimeEntryResponse, error)
 }
 
 func WrongStatusCodeError(statusCode int, statusText string) error {
@@ -26,6 +27,21 @@ type ClientManager struct {
 	networkClient HTTPClient
 	storage       storage.Manager
 	chatID        int64
+}
+
+func (r *ClientManager) TodayTimeEntries() ([]*TimeEntryResponse, error) {
+	bytesResponse, err := r.sendMessage(nil, "GET", "/time_entries.json?user_id=me&spent_on=today")
+	if err != nil {
+		return nil, err
+	}
+
+	timeEntriesBody := new(TimeEntriesBodyResponse)
+	err = json.Unmarshal(bytesResponse, timeEntriesBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return timeEntriesBody.TimeEntries, nil
 }
 
 func NewClientManager(networkClient HTTPClient, storage storage.Manager, chatID int64) *ClientManager {
