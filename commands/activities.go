@@ -2,9 +2,11 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/alphatroya/redmine-helper-bot/storage"
+	"github.com/olekukonko/tablewriter"
 )
 
 type Activities struct {
@@ -23,11 +25,23 @@ func (a Activities) Handle(message string) (*CommandResult, error) {
 		return nil, err
 	}
 
-	message = "Найдены следующие активности:\n\n"
+	tableString := &strings.Builder{}
+	table := tablewriter.NewWriter(tableString)
+	table.SetHeader([]string{"ID", "Название"})
+
 	for _, activity := range activities {
-		message += fmt.Sprintf("%s - *%d*\n", activity.Name, activity.Id)
+		wrappedName := []rune(activity.Name)
+		if len(wrappedName) > 20 {
+			wrappedName = append(wrappedName[:17], []rune("...")...)
+		}
+		data := []string{
+			fmt.Sprintf("%d", activity.Id),
+			string(wrappedName),
+		}
+		table.Append(data)
 	}
-	return NewCommandResult(message), nil
+	table.Render()
+	return NewCommandResult("`" + tableString.String() + "`"), nil
 }
 
 func (a Activities) IsCompleted() bool {

@@ -15,9 +15,9 @@ func TestActivities_Handle(t *testing.T) {
 	storageMock := &StorageMock{}
 	sut := newActivitiesCommand(redmineMock, storageMock, 1)
 	result, err := sut.Handle("")
-	expectedResult := "Найдены следующие активности:\n\nTest - *5*\nTest2 - *1*\n"
+	expectedResult := "`+----+----------+\n| ID | НАЗВАНИЕ |\n+----+----------+\n|  5 | Test     |\n|  1 | Test2    |\n+----+----------+\n`"
 	if result != nil && result.Message() != expectedResult {
-		t.Errorf("getting wrong result text expected: %s, got: %s", expectedResult, result.Message())
+		t.Errorf("getting wrong result text expected: %q, got: %q", expectedResult, result.Message())
 	}
 
 	if err != nil {
