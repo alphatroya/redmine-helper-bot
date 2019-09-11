@@ -27,7 +27,17 @@ func (f FillStatus) Handle(message string) (*CommandResult, error) {
 	for _, timeEntry := range timeEntries {
 		sum += timeEntry.Hours
 	}
-	return NewCommandResult(fmt.Sprintf("Вы сегодня работали %.1f ч.", sum)), nil
+	message = fmt.Sprintf(`Вы сегодня работали *%.1f ч.*`, sum)
+
+	if len(timeEntries) > 0 {
+		message += "\n\n"
+		message += "`Часы | Задача | Активность | Комментарий`\n"
+		message += "`-----+--------+------------+---------------------`\n"
+		for _, entry := range timeEntries {
+			message += fmt.Sprintf("` %.1f | %d  | %-10s | %-20s\n`", entry.Hours, entry.Issue.ID, string([]rune(entry.Activity.Name)[:10]), string([]rune(entry.Comments)[:20]))
+		}
+	}
+	return NewCommandResult(message), nil
 }
 
 func (f FillStatus) IsCompleted() bool {

@@ -19,19 +19,23 @@ type TimeEntriesBodyResponse struct {
 	TimeEntries []*TimeEntryResponse `json:"time_entries"`
 }
 
+type TimeEntryResponseIssue struct {
+	ID int `json:"id"`
+}
+
+type TimeEntryResponseActivity struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
 type TimeEntryResponse struct {
-	Activity struct {
-		ID   int    `json:"id"`
-		Name string `json:"name"`
-	} `json:"activity"`
-	Comments  string  `json:"comments"`
-	CreatedOn string  `json:"created_on"`
-	Hours     float32 `json:"hours"`
-	ID        int     `json:"id"`
-	Issue     struct {
-		ID int `json:"id"`
-	} `json:"issue"`
-	Project struct {
+	Activity  TimeEntryResponseActivity `json:"activity"`
+	Comments  string                    `json:"comments"`
+	CreatedOn string                    `json:"created_on"`
+	Hours     float32                   `json:"hours"`
+	ID        int                       `json:"id"`
+	Issue     TimeEntryResponseIssue    `json:"issue"`
+	Project   struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	} `json:"project"`
