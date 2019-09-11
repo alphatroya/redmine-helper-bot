@@ -8,27 +8,52 @@ import (
 )
 
 func TestFillStatus_Handle(t *testing.T) {
-	redmineMock := &RedmineMock{mockTimeEntries: []*redmine.TimeEntryResponse{
+	table := []struct {
+		mockEntries []*redmine.TimeEntryResponse
+		expected    string
+	}{
 		{
-			ID:    0,
-			Hours: 5,
+			[]*redmine.TimeEntryResponse{},
+			"Вы сегодня работали *0.0 ч.*",
 		},
 		{
-			ID:    1,
-			Hours: 4,
+			[]*redmine.TimeEntryResponse{
+				{
+					Activity: redmine.TimeEntryResponseActivity{
+						ID:   0,
+						Name: "Разработка",
+					},
+					ID:       0,
+					Hours:    5,
+					Issue:    redmine.TimeEntryResponseIssue{ID: 55422},
+					Comments: "Test 1",
+				},
+				{
+					Activity: redmine.TimeEntryResponseActivity{
+						ID:   1,
+						Name: "Дизайн",
+					},
+					ID:       1,
+					Hours:    4,
+					Issue:    redmine.TimeEntryResponseIssue{ID: 55422},
+					Comments: "Test 2",
+				},
+			},
+			"Вы сегодня работали *9.0 ч.*\n\n`Часы | Задача | Активность | Комментарий`\n`-----+--------+------------+---------------------`\n` 5.0 | 55422  | Разработка | Test 1\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n`` 4.0 | 55422  | Дизайн\x00\x00\x00\x00 | Test 2\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\n`",
 		},
-	},
 	}
-	storageMock := &StorageMock{}
-	sut := NewFillStatus(redmineMock, storageMock, 5)
-	result, err := sut.Handle("")
-	if err != nil {
-		t.Errorf("success conditions should complete without error, got: %s", err)
-	}
+	for _, item := range table {
+		storageMock := &StorageMock{}
+		sut := NewFillStatus(RedmineMock{mockTimeEntries: item.mockEntries}, storageMock, 5)
+		result, err := sut.Handle("")
+		if err != nil {
+			t.Errorf("success conditions should complete without error, got: %s", err)
+		}
 
-	expectedMessage := "Вы сегодня работали 9.0 ч."
-	if result.Message() != expectedMessage {
-		t.Errorf("success conditions should result correct output message, got %s, expected %s", result.Message(), expectedMessage)
+		expectedMessage := item.expected
+		if result.Message() != expectedMessage {
+			t.Errorf("success conditions should result correct output message, got %q, expected %q", result.Message(), expectedMessage)
+		}
 	}
 }
 
