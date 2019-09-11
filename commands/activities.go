@@ -30,13 +30,9 @@ func (a Activities) Handle(message string) (*CommandResult, error) {
 	table.SetHeader([]string{"ID", "Название"})
 
 	for _, activity := range activities {
-		wrappedName := []rune(activity.Name)
-		if len(wrappedName) > 20 {
-			wrappedName = append(wrappedName[:17], []rune("...")...)
-		}
 		data := []string{
 			fmt.Sprintf("%d", activity.Id),
-			string(wrappedName),
+			wrap(activity.Name, 20),
 		}
 		table.Append(data)
 	}

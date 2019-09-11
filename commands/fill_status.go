@@ -2,9 +2,11 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/alphatroya/redmine-helper-bot/storage"
+	"github.com/olekukonko/tablewriter"
 )
 
 type FillStatus struct {
@@ -31,11 +33,22 @@ func (f FillStatus) Handle(message string) (*CommandResult, error) {
 
 	if len(timeEntries) > 0 {
 		message += "\n\n"
-		message += "`Часы | Задача | Активность | Комментарий`\n"
-		message += "`-----+--------+------------+---------------------`\n"
+
+		tableString := &strings.Builder{}
+		table := tablewriter.NewWriter(tableString)
+		table.SetHeader([]string{"Часы", "Задача", "Активность", "Комментарий"})
+
 		for _, entry := range timeEntries {
-			message += fmt.Sprintf("` %.1f | %d  | %-10s | %-20s\n`", entry.Hours, entry.Issue.ID, string([]rune(entry.Activity.Name)[:10]), string([]rune(entry.Comments)[:20]))
+			data := []string{
+				fmt.Sprintf("%.1f", entry.Hours),
+				fmt.Sprintf("%d", entry.Issue.ID),
+				wrap(entry.Activity.Name, 10),
+				wrap(entry.Comments, 20),
+			}
+			table.Append(data)
 		}
+		table.Render()
+		message += "`" + tableString.String() + "`"
 	}
 	return NewCommandResult(message), nil
 }
