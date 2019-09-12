@@ -3,7 +3,7 @@ package commands
 import (
 	"testing"
 
-	"github.com/alphatroya/redmine-helper-bot/mocks"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 func TestSetTokenCommand_Handle(t *testing.T) {
@@ -21,7 +21,7 @@ func TestSetTokenCommand_Handle(t *testing.T) {
 	}
 
 	for _, message := range data {
-		storageMock := mocks.NewStorageMock()
+		storageMock := storage.NewStorageMock()
 		command := newSetTokenCommand(storageMock, message.chatID)
 		result, err := command.Handle(message.text)
 		if result != nil && result.Message() != message.expected {
@@ -34,7 +34,7 @@ func TestSetTokenCommand_Handle(t *testing.T) {
 }
 
 func TestSetTokenCommand_IsCompleted(t *testing.T) {
-	storageMock := mocks.NewStorageMock()
+	storageMock := storage.NewStorageMock()
 	command := newSetTokenCommand(storageMock, 0)
 	if command.IsCompleted() != true {
 		t.Error("set token command should always be completed")

@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/alphatroya/redmine-helper-bot/storage"
+
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 )
 
@@ -12,7 +14,7 @@ func TestActivities_Handle(t *testing.T) {
 		{Id: 5, Name: "Test"},
 		{Id: 1, Name: "Test2"},
 	}}
-	storageMock := &StorageMock{}
+	storageMock := storage.NewStorageMock()
 	sut := newActivitiesCommand(redmineMock, storageMock, 1)
 	result, err := sut.Handle("")
 	expectedResult := "`+----+----------+\n| ID | НАЗВАНИЕ |\n+----+----------+\n|  5 | Test     |\n|  1 | Test2    |\n+----+----------+\n`"
@@ -27,7 +29,7 @@ func TestActivities_Handle(t *testing.T) {
 
 func TestActivities_Handle2(t *testing.T) {
 	redmineMock := &RedmineMock{err: fmt.Errorf("test")}
-	storageMock := &StorageMock{}
+	storageMock := storage.NewStorageMock()
 	sut := newActivitiesCommand(redmineMock, storageMock, 1)
 	result, err := sut.Handle("")
 	expectedResult := "test"
@@ -42,7 +44,7 @@ func TestActivities_Handle2(t *testing.T) {
 
 func TestActivities_IsCompleted(t *testing.T) {
 	redmineMock := &RedmineMock{}
-	storageMock := &StorageMock{}
+	storageMock := storage.NewStorageMock()
 	sut := newActivitiesCommand(redmineMock, storageMock, 1)
 	if sut.IsCompleted() != true {
 		t.Error("activities command should always be completed")

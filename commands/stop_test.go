@@ -3,11 +3,11 @@ package commands
 import (
 	"testing"
 
-	"github.com/alphatroya/redmine-helper-bot/mocks"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 func TestStop_Handle(t *testing.T) {
-	storageMock := mocks.NewStorageMock()
+	storageMock := storage.NewStorageMock()
 	var chatID int64 = 5
 	storageMock.SetHost("https://google.com", chatID)
 	storageMock.SetToken("dddsad", chatID)
@@ -35,7 +35,7 @@ func TestStopCommand_IsCompleted(t *testing.T) {
 }
 
 func TestStopConstructor(t *testing.T) {
-	storageMock := mocks.NewStorageMock()
+	storageMock := storage.NewStorageMock()
 	if newStopCommand(storageMock, 5) == nil {
 		t.Error("new stop command should return a new instance")
 	}

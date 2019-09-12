@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/alphatroya/redmine-helper-bot/mocks"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 func TestSuccessRequest(t *testing.T) {
-	storageMock := mocks.NewStorageMock()
+	storageMock := storage.NewStorageMock()
 	storageMock.SetHost("http://google.com", 10)
 	storageMock.SetToken("fdjsdfjs", 10)
 	networkClient := NewClientRequestMock(200, nil, `{ "test": "test" }`)
@@ -21,7 +21,7 @@ func TestSuccessRequest(t *testing.T) {
 
 func TestNetworkErrorResponse(t *testing.T) {
 	networkClient := NewClientRequestMock(400, fmt.Errorf("error"), "")
-	storageMock := mocks.NewStorageMock()
+	storageMock := storage.NewStorageMock()
 	storageMock.SetHost("http://google.com", 10)
 	storageMock.SetToken("fdjsdfjs", 10)
 	redmine := NewClientManager(networkClient, storageMock, 10)
@@ -33,7 +33,7 @@ func TestNetworkErrorResponse(t *testing.T) {
 
 func TestWrongResponseRequest(t *testing.T) {
 	networkClient := NewClientRequestMock(400, nil, "")
-	storageMock := mocks.NewStorageMock()
+	storageMock := storage.NewStorageMock()
 	storageMock.SetHost("http://google.com", 10)
 	storageMock.SetToken("fdjsdfjs", 10)
 	redmine := NewClientManager(networkClient, storageMock, 10)
