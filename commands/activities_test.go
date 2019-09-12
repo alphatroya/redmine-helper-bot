@@ -2,8 +2,9 @@ package commands
 
 import (
 	"fmt"
-	"github.com/alphatroya/redmine-helper-bot/storage"
 	"testing"
+
+	"github.com/alphatroya/redmine-helper-bot/storage"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 )

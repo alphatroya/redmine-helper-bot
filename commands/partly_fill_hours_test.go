@@ -1,9 +1,10 @@
 package commands
 
 import (
-	"github.com/alphatroya/redmine-helper-bot/storage"
 	"reflect"
 	"testing"
+
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 func TestPartlyFillHoursCommand_Handle(t *testing.T) {
