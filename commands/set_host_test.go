@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/alphatroya/redmine-helper-bot/mocks"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 func TestSetHostCommand_Handle(t *testing.T) {
@@ -23,7 +23,7 @@ func TestSetHostCommand_Handle(t *testing.T) {
 	}
 
 	for _, message := range data {
-		storageMock := mocks.NewStorageMock()
+		storageMock := storage.NewStorageMock()
 		command := newSetHostCommand(storageMock, message.chatID)
 		result, err := command.Handle(message.text)
 		if result != nil && result.message != message.expected {
@@ -36,7 +36,7 @@ func TestSetHostCommand_Handle(t *testing.T) {
 }
 
 func TestSetHostCommand_IsCompleted(t *testing.T) {
-	storageMock := mocks.NewStorageMock()
+	storageMock := storage.NewStorageMock()
 	command := newSetHostCommand(storageMock, 0)
 	if command.IsCompleted() != true {
 		t.Error("set host command should always be completed")
