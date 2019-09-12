@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 	"testing"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
@@ -43,7 +44,7 @@ func TestFillStatus_Handle(t *testing.T) {
 		},
 	}
 	for _, item := range table {
-		storageMock := &StorageMock{}
+		storageMock := storage.NewStorageMock()
 		sut := NewFillStatus(RedmineMock{mockTimeEntries: item.mockEntries}, storageMock, 5)
 		result, err := sut.Handle("")
 		if err != nil {
@@ -59,7 +60,7 @@ func TestFillStatus_Handle(t *testing.T) {
 
 func TestFillStatus_Handle2(t *testing.T) {
 	redmineMock := &RedmineMock{err: fmt.Errorf("test")}
-	storageMock := &StorageMock{}
+	storageMock := storage.NewStorageMock()
 	sut := NewFillStatus(redmineMock, storageMock, 1)
 	result, err := sut.Handle("")
 	expectedResult := "test"
@@ -74,7 +75,7 @@ func TestFillStatus_Handle2(t *testing.T) {
 
 func TestFillStatus_IsCompleted(t *testing.T) {
 	redmineMock := &RedmineMock{}
-	storageMock := &StorageMock{}
+	storageMock := storage.NewStorageMock()
 	sut := NewFillStatus(redmineMock, storageMock, 5)
 	if sut.IsCompleted() != true {
 		t.Error("fill status command should always be completed")
