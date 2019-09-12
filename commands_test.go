@@ -14,7 +14,7 @@ func setupSubTest(t *testing.T) func(t *testing.T) {
 }
 
 var botMock *MockBotSender
-var redisMock *storage.StorageMock
+var redisMock *storage.Mock
 var handler *UpdateHandler
 
 func setup() {

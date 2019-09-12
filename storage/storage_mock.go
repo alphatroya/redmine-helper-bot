@@ -2,37 +2,37 @@ package storage
 
 import "fmt"
 
-type StorageMock struct {
+type Mock struct {
 	storageToken map[int64]string
 	storageHost  map[int64]string
 }
 
-func (r *StorageMock) ResetData(chat int64) error {
+func (r *Mock) ResetData(chat int64) error {
 	r.storageHost[chat] = ""
 	r.storageToken[chat] = ""
 	return nil
 }
 
-func (r *StorageMock) StorageHost() map[int64]string {
+func (r *Mock) StorageHost() map[int64]string {
 	return r.storageHost
 }
 
-func (r StorageMock) StorageToken() map[int64]string {
+func (r Mock) StorageToken() map[int64]string {
 	return r.storageToken
 }
 
-func NewStorageMock() *StorageMock {
-	mock := new(StorageMock)
+func NewStorageMock() *Mock {
+	mock := new(Mock)
 	mock.storageToken = make(map[int64]string)
 	mock.storageHost = make(map[int64]string)
 	return mock
 }
 
-func (r StorageMock) SetToken(token string, chat int64) {
+func (r Mock) SetToken(token string, chat int64) {
 	r.storageToken[chat] = token
 }
 
-func (r StorageMock) GetToken(chat int64) (string, error) {
+func (r Mock) GetToken(chat int64) (string, error) {
 	token, ok := r.storageToken[chat]
 	if !ok {
 		return "", fmt.Errorf("storage value is nil")
@@ -40,11 +40,11 @@ func (r StorageMock) GetToken(chat int64) (string, error) {
 	return token, nil
 }
 
-func (r StorageMock) SetHost(host string, chat int64) {
+func (r Mock) SetHost(host string, chat int64) {
 	r.storageHost[chat] = host
 }
 
-func (r StorageMock) GetHost(chat int64) (string, error) {
+func (r Mock) GetHost(chat int64) (string, error) {
 	host, ok := r.storageHost[chat]
 	if !ok {
 		return "", fmt.Errorf("storage value is nil")
