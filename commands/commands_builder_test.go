@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/alphatroya/redmine-helper-bot/mocks"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 func TestBotCommandsBuilder_Build(t *testing.T) {
@@ -26,7 +26,7 @@ func TestBotCommandsBuilder_Build(t *testing.T) {
 		{"*commands.FillStatus", "", "fstatus"},
 	}
 	for _, input := range checkData {
-		mockStorage := mocks.NewStorageMock()
+		mockStorage := storage.NewStorageMock()
 		sut := NewBotCommandsBuilder(mockStorage)
 		buildResult := sut.Build(input.command, input.message, 0)
 		if reflect.TypeOf(buildResult).String() != input.objectType {

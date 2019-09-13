@@ -3,6 +3,8 @@ package commands
 import (
 	"reflect"
 	"testing"
+
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 func TestPartlyFillHoursCommand_Handle(t *testing.T) {
@@ -17,7 +19,7 @@ func TestPartlyFillHoursCommand_Handle(t *testing.T) {
 	}
 	for _, item := range data {
 		redmineMock := &RedmineMock{}
-		storageMock := &StorageMock{}
+		storageMock := storage.NewStorageMock()
 		sut := newPartlyFillHoursCommand(redmineMock, storageMock, 1)
 		sut.isCompleted = item.isCompleted
 		sut.isHoursSet = item.isHoursSet
@@ -33,7 +35,7 @@ func TestPartlyFillHoursCommand_Handle(t *testing.T) {
 
 func TestNewFillHoursCommand(t *testing.T) {
 	redmineMock := &RedmineMock{}
-	storageMock := &StorageMock{}
+	storageMock := storage.NewStorageMock()
 	data := []struct {
 		message string
 		chatID  int64

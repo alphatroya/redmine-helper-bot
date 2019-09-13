@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/alphatroya/redmine-helper-bot/mocks"
+	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
 func setupSubTest(t *testing.T) func(t *testing.T) {
@@ -14,12 +14,12 @@ func setupSubTest(t *testing.T) func(t *testing.T) {
 }
 
 var botMock *MockBotSender
-var redisMock *mocks.StorageMock
+var redisMock *storage.Mock
 var handler *UpdateHandler
 
 func setup() {
 	botMock = &MockBotSender{}
-	redisMock = mocks.NewStorageMock()
+	redisMock = storage.NewStorageMock()
 	handler = &UpdateHandler{botMock, redisMock}
 }
 

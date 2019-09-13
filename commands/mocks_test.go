@@ -2,27 +2,6 @@ package commands
 
 import "github.com/alphatroya/redmine-helper-bot/redmine"
 
-type StorageMock struct {
-}
-
-func (s StorageMock) ResetData(chat int64) error {
-	return nil
-}
-
-func (s StorageMock) SetToken(token string, chat int64) {
-}
-
-func (s StorageMock) GetToken(int64) (string, error) {
-	return "", nil
-}
-
-func (s StorageMock) SetHost(host string, chat int64) {
-}
-
-func (s StorageMock) GetHost(chat int64) (string, error) {
-	return "", nil
-}
-
 type RedmineMock struct {
 	mockActivities  []*redmine.Activities
 	mockTimeEntries []*redmine.TimeEntryResponse
