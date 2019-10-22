@@ -149,11 +149,11 @@ func (p *PartlyFillHoursCommand) setHours(hours string) (*CommandResult, error) 
 	}
 	p.hours = hours
 	p.isHoursSet = true
-	activities, _ := p.redmineClient.Activities()
-	if len(activities) == 0 {
+	activities, err := p.redmineClient.Activities()
+	if err != nil {
 		return NewCommandResult("Количество часов установлено, введите комментарий"), nil
 	}
-	var activitiesButtons []string
+	activitiesButtons := []string{"Исправление бага"}
 	for _, activity := range activities {
 		activitiesButtons = append(activitiesButtons, activity.Name)
 	}
