@@ -30,7 +30,7 @@ func TestBotCommandsBuilder_Build(t *testing.T) {
 		sut := NewBotCommandsBuilder(mockStorage)
 		buildResult := sut.Build(input.command, input.message, 0)
 		if reflect.TypeOf(buildResult).String() != input.objectType {
-			t.Errorf("get wrong object from builder, got %T, expected %s", buildResult, input.objectType)
+			t.Errorf("get wrong object from builder, input %s, got %T, expected %s", input.command, buildResult, input.objectType)
 		}
 	}
 }
