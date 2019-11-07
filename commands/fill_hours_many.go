@@ -95,5 +95,5 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 }
 
 func (f FillHoursMany) IsCompleted() bool {
-	panic("implement me")
+	return true
 }

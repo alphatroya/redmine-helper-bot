@@ -148,4 +148,10 @@ func successMessage(host string, tasks []struct {
 }
 
 func TestFillHoursMany_IsCompleted(t *testing.T) {
+	storageMock := storage.NewStorageMock()
+	redmineMock := &RedmineMock{}
+	command := NewFillHoursMany(redmineMock, storageMock, 5)
+	if !command.IsCompleted() {
+		t.Errorf("Fill command should always be completed")
+	}
 }
