@@ -15,26 +15,76 @@ func TestFillHoursMany_Handle(t *testing.T) {
 		err         string
 	}{
 		{
-			input: "52233 54223 53312 Исправление",
+			input: "52233 Исправление",
 			output: successMessage(
 				"https://google.com",
 				[]struct {
 					id    string
-					name  string
 					hours string
 				}{
-					{"52233", "Test0", "3"},
-					{"54223", "Test1", "3"},
-					{"53312", "Test2", "2"},
+					{"52233", "4"},
+				}),
+			storedHours: 4,
+			err:         "",
+		},
+		{
+			input: "52233 54223 53312 52551 Исправление",
+			output: successMessage(
+				"https://google.com",
+				[]struct {
+					id    string
+					hours string
+				}{
+					{"52233", "1"},
+					{"54223", "1"},
+					{"53312", "1"},
+					{"52551", "1"},
+				}),
+			storedHours: 4,
+			err:         "",
+		},
+		{
+			input: "52233 54223 53312 52551 Исправление",
+			output: successMessage(
+				"https://google.com",
+				[]struct {
+					id    string
+					hours string
+				}{
+					{"52233", "2"},
+					{"54223", "2"},
+					{"53312", "2"},
+					{"52551", "2"},
 				}),
 			storedHours: 0,
 			err:         "",
 		},
 		{
+			input: "52233 54223 53312 Исправление",
+			output: successMessage(
+				"https://google.com",
+				[]struct {
+					id    string
+					hours string
+				}{
+					{"52233", "3"},
+					{"54223", "3"},
+					{"53312", "2"},
+				}),
+			storedHours: 0,
+			err:         "",
+		},
+		{
+			input:       "52233 54223 53312 Исправление",
+			output:      "",
+			storedHours: 8,
+			err:         "Вы сегодня уже работали 8 часов",
+		},
+		{
 			input:       "54221 44221 44421 Test",
 			output:      "",
 			storedHours: 6,
-			err:         "Ошибка: вы ввели слишком много номеров задач. В целях точного распределения задач за день количество ограничено числом свободных за день часов",
+			err:         "Вы ввели слишком много номеров задач. В целях точного распределения задач за день количество ограничено числом свободных за день часов",
 		},
 		{
 			input:  "",
@@ -44,7 +94,7 @@ func TestFillHoursMany_Handle(t *testing.T) {
 		{
 			input:  "53223 43231 33321",
 			output: "",
-			err:    "Ошибка: вы не ввели комментарий для задач",
+			err:    "Вы не ввели комментарий для задач",
 		},
 	}
 
@@ -55,7 +105,7 @@ func TestFillHoursMany_Handle(t *testing.T) {
 
 		redmineMock := &RedmineMock{}
 		redmineMock.mockTimeEntries = []*redmine.TimeEntryResponse{
-			{Hours: 8 - item.storedHours},
+			{Hours: item.storedHours},
 		}
 
 		command := NewFillHoursMany(redmineMock, storageMock, chatID)
@@ -64,6 +114,9 @@ func TestFillHoursMany_Handle(t *testing.T) {
 		if err != nil {
 			if err.Error() != item.err {
 				t.Errorf("command return wrong error\ngot: %s\nexpected: %s", err, item.err)
+			}
+			if len(redmineMock.filledIssues) != 0 {
+				t.Errorf("error command should not edit issues")
 			}
 			return
 		}
@@ -80,13 +133,17 @@ func TestFillHoursMany_Handle(t *testing.T) {
 
 func successMessage(host string, tasks []struct {
 	id    string
-	name  string
 	hours string
 }) string {
 	result := fmt.Sprintf("[Задачи](%s/time_entries) успешно обновлены!\n", host)
+	result += "`+--------+------+\n"
+	result += "| ЗАДАЧА | ЧАСЫ |\n"
+	result += "+--------+------+\n"
 	for _, task := range tasks {
-		result += fmt.Sprintf("%s | %s | %s\n", task.id, task.name, task.hours)
+		result += fmt.Sprintf("|  %s |    %s |\n", task.id, task.hours)
 	}
+	result += "+--------+------+\n"
+	result += "`"
 	return result
 }
 

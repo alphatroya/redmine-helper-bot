@@ -1,11 +1,16 @@
 package commands
 
-import "github.com/alphatroya/redmine-helper-bot/redmine"
+import (
+	"github.com/alphatroya/redmine-helper-bot/redmine"
+	"strconv"
+)
 
 type RedmineMock struct {
 	mockActivities  []*redmine.Activities
 	mockTimeEntries []*redmine.TimeEntryResponse
 	err             error
+	fillHoursError  error
+	filledIssues    []string
 }
 
 func (r RedmineMock) TodayTimeEntries() ([]*redmine.TimeEntryResponse, error) {
@@ -23,7 +28,19 @@ func (r RedmineMock) SetHost(host string) {
 }
 
 func (r RedmineMock) FillHoursRequest(issueID string, hours string, comment string, activityID string) (*redmine.TimeEntryBodyResponse, error) {
-	return &redmine.TimeEntryBodyResponse{}, nil
+	if r.fillHoursError != nil {
+		return nil, r.fillHoursError
+	}
+	r.filledIssues = append(r.filledIssues, issueID)
+	hoursInt, _ := strconv.Atoi(hours)
+	intIssueID, _ := strconv.Atoi(issueID)
+	timeEntry := redmine.TimeEntryResponse{
+		Hours: float32(hoursInt),
+		Issue: redmine.TimeEntryResponseIssue{ID: intIssueID},
+	}
+	return &redmine.TimeEntryBodyResponse{
+		TimeEntry: timeEntry,
+	}, nil
 }
 
 func (r RedmineMock) Issue(issueID string) (*redmine.IssueContainer, error) {
