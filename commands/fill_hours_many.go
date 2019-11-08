@@ -35,7 +35,7 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 			fragment = strings.TrimLeft(fragment, "#")
 			issues = append(issues, fragment)
 		} else {
-			comment = strings.Join(fragments[i:], "")
+			comment = strings.Join(fragments[i:], " ")
 			break
 		}
 	}
