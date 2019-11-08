@@ -3,12 +3,14 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"math"
+	"regexp"
+	"strconv"
+	"strings"
+
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/alphatroya/redmine-helper-bot/storage"
 	"github.com/olekukonko/tablewriter"
-	"math"
-	"regexp"
-	"strings"
 )
 
 type FillHoursMany struct {
@@ -75,21 +77,44 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 		return nil, err
 	}
 
-	responseMessage := fmt.Sprintf("[Задачи](%s/time_entries) успешно обновлены!\n", host)
-	tableString := &strings.Builder{}
-	table := tablewriter.NewWriter(tableString)
-	table.SetHeader([]string{"Задача", "Часы"})
+	var fillErrors []string
+	var remain int
+	successTableString := &strings.Builder{}
+	successTable := tablewriter.NewWriter(successTableString)
+	successTable.SetHeader([]string{"Задача", "Часы"})
 	for i, issue := range issues {
 		if i < len(hours) {
-			fillHoursResponse, err := f.redmineClient.FillHoursRequest(issue, hours[i], comment, "")
+			hour := hours[i]
+			fillHoursResponse, err := f.redmineClient.FillHoursRequest(issue, hour, comment, "")
 			if err != nil {
+				fillErrors = append(fillErrors, issue)
+				hourInt, _ := strconv.Atoi(hour)
+				remain += hourInt
 				continue
 			}
-			table.Append([]string{fmt.Sprintf("%d", fillHoursResponse.TimeEntry.Issue.ID), fmt.Sprintf("%.0f", fillHoursResponse.TimeEntry.Hours)})
+			successTable.Append([]string{fmt.Sprintf("%d", fillHoursResponse.TimeEntry.Issue.ID), fmt.Sprintf("%.0f", fillHoursResponse.TimeEntry.Hours)})
 		}
 	}
-	table.Render()
-	responseMessage += "`" + tableString.String() + "`"
+	successTable.Render()
+
+	var responseMessage string
+	if len(fillErrors) != 0 {
+		responseMessage = "Задачи _частично_ обновлены, обновленные задачи\n\n"
+		responseMessage += "`" + successTableString.String() + "`\n"
+		responseMessage += "Не удалось обновить задачи\n\n"
+		failureTableString := &strings.Builder{}
+		failureTable := tablewriter.NewWriter(failureTableString)
+		failureTable.SetHeader([]string{"Задача"})
+		for _, issue := range fillErrors {
+			failureTable.Append([]string{fmt.Sprintf("%s", issue)})
+		}
+		failureTable.Render()
+		responseMessage += "`" + failureTableString.String() + "`\n"
+		responseMessage += fmt.Sprintf("Не удалось распределить %d ч", remain)
+	} else {
+		responseMessage = fmt.Sprintf("[Задачи](%s/time_entries) успешно обновлены!\n\n", host)
+		responseMessage += "`" + successTableString.String() + "`"
+	}
 
 	return NewCommandResult(responseMessage), nil
 }
