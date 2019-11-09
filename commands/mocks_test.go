@@ -8,11 +8,11 @@ import (
 )
 
 type RedmineMock struct {
-	mockActivities        []*redmine.Activities
-	mockTimeEntries       []*redmine.TimeEntryResponse
-	err                   error
-	fillHoursSuccessCount *struct{ count int }
-	filledIssues          []string
+	mockActivities     []*redmine.Activities
+	mockTimeEntries    []*redmine.TimeEntryResponse
+	err                error
+	fillHoursErrorsMap map[string]bool
+	filledIssues       []string
 }
 
 func (r *RedmineMock) TodayTimeEntries() ([]*redmine.TimeEntryResponse, error) {
@@ -30,13 +30,8 @@ func (r *RedmineMock) SetHost(host string) {
 }
 
 func (r *RedmineMock) FillHoursRequest(issueID string, hours string, comment string, activityID string) (*redmine.TimeEntryBodyResponse, error) {
-	if r.fillHoursSuccessCount != nil {
-		if r.fillHoursSuccessCount.count != 0 {
-			r.fillHoursSuccessCount.count--
-			return r.mockResponse(issueID, hours)
-		} else {
-			return nil, fmt.Errorf("mock error")
-		}
+	if isError, _ := r.fillHoursErrorsMap[issueID]; isError {
+		return nil, fmt.Errorf("mock error")
 	}
 	return r.mockResponse(issueID, hours)
 }

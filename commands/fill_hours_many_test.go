@@ -10,11 +10,11 @@ import (
 
 func TestFillHoursMany_Handle(t *testing.T) {
 	data := []struct {
-		input        string
-		output       string
-		storedHours  float32
-		resultErr    string
-		successCount int
+		input              string
+		output             string
+		storedHours        float32
+		resultErr          string
+		fillHoursErrorsMap map[string]bool
 	}{
 		{
 			input: "52233 Исправление",
@@ -40,9 +40,9 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					hours string
 				}{
 					{"52233", "1"},
-					{"54223", "1"},
-					{"53312", "1"},
 					{"52551", "1"},
+					{"53312", "1"},
+					{"54223", "1"},
 				}),
 			storedHours: 4,
 			resultErr:   "",
@@ -57,9 +57,9 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					hours string
 				}{
 					{"52233", "1"},
-					{"54223", "1"},
-					{"53312", "1"},
 					{"52551", "1"},
+					{"53312", "1"},
+					{"54223", "1"},
 				}),
 			storedHours: 4,
 			resultErr:   "",
@@ -74,11 +74,27 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					hours string
 				}{
 					{"52233", "1"},
-					{"54223", "1"},
-					{"53312", "1"},
 					{"52551", "1"},
+					{"53312", "1"},
+					{"54223", "1"},
 				}),
 			storedHours: 4,
+			resultErr:   "",
+		},
+		{
+			input: "52233 52233 53312 52551 Исправление",
+			output: successMessage(
+				"https://google.com",
+				true,
+				[]struct {
+					id    string
+					hours string
+				}{
+					{"52233", "3"},
+					{"52551", "3"},
+					{"53312", "2"},
+				}),
+			storedHours: 0,
 			resultErr:   "",
 		},
 		{
@@ -91,9 +107,9 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					hours string
 				}{
 					{"52233", "2"},
-					{"54223", "2"},
-					{"53312", "2"},
 					{"52551", "2"},
+					{"53312", "2"},
+					{"54223", "2"},
 				}),
 			storedHours: 0,
 			resultErr:   "",
@@ -108,14 +124,14 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					hours string
 				}{
 					{"52233", "3"},
-					{"54223", "3"},
-					{"53312", "2"},
+					{"53312", "3"},
+					{"54223", "2"},
 				}),
 			storedHours: 0,
 			resultErr:   "",
 		},
 		{
-			input: "52233 54223 53312 Исправление",
+			input: "52233 63312 74223 Исправление",
 			output: successMessage(
 				"https://google.com",
 				false,
@@ -129,12 +145,15 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"54223", "3"},
-					{"53312", "2"},
+					{"63312", "3"},
+					{"74223", "2"},
 				}),
-			storedHours:  0,
-			resultErr:    "",
-			successCount: 1,
+			storedHours: 0,
+			resultErr:   "",
+			fillHoursErrorsMap: map[string]bool{
+				"63312": true,
+				"74223": true,
+			},
 		},
 		{
 			input:       "52233 54223 53312 Исправление",
@@ -175,9 +194,7 @@ func TestFillHoursMany_Handle(t *testing.T) {
 		redmineMock.mockTimeEntries = []*redmine.TimeEntryResponse{
 			{Hours: item.storedHours},
 		}
-		if item.successCount > 0 {
-			redmineMock.fillHoursSuccessCount = &struct{ count int }{item.successCount}
-		}
+		redmineMock.fillHoursErrorsMap = item.fillHoursErrorsMap
 
 		command := NewFillHoursMany(redmineMock, storageMock, chatID)
 		result, err := command.Handle(item.input)
@@ -196,7 +213,7 @@ func TestFillHoursMany_Handle(t *testing.T) {
 		}
 
 		if result.Message() != item.output {
-			t.Errorf("command return wrong message\ngot: %s\nexpected: %s", result.Message(), item.output)
+			t.Errorf("command: %s\nreturn wrong message\ngot: %s\nexpected: %s", item.input, result.Message(), item.output)
 		}
 	}
 }
@@ -207,9 +224,9 @@ func successMessage(host string, success bool, tasks []struct {
 }) string {
 	var result string
 	if success {
-		result = fmt.Sprintf("[Задачи](%s/time_entries) успешно обновлены!\n\n", host)
+		result = fmt.Sprintf("Задачи([%d](%s/time_entries)) успешно обновлены!\n\n", len(tasks), host)
 	} else {
-		result = "Задачи _частично_ обновлены, обновленные задачи\n\n"
+		result = "Задачи *частично* обновлены, обновленные задачи\n\n"
 	}
 	result += "`+--------+------+\n"
 	result += "| ЗАДАЧА | ЧАСЫ |\n"
@@ -235,7 +252,7 @@ func errorsMessage(remain int, tasks []struct {
 	}
 	result += "+--------+\n"
 	result += "`\n"
-	result += fmt.Sprintf("Не удалось распределить %d ч", remain)
+	result += fmt.Sprintf("Не удалось распределить %d ч.", remain)
 	return result
 }
 
