@@ -87,8 +87,9 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 
 func (f FillHoursMany) fillIssuesResult(issues []string, hours []string, comment string) (fillSuccess []*redmine.TimeEntryBodyResponse, fillErrors []string, remain int) {
 	type Result struct {
-		success *redmine.TimeEntryBodyResponse
-		failure string
+		success       *redmine.TimeEntryBodyResponse
+		failure       string
+		failureRemain int
 	}
 	resultChan := make(chan Result)
 	for i, issue := range issues {
@@ -98,11 +99,10 @@ func (f FillHoursMany) fillIssuesResult(issues []string, hours []string, comment
 				fillHoursResponse, err := f.redmineClient.FillHoursRequest(issue, hour, comment, "")
 				if err != nil {
 					hourInt, _ := strconv.Atoi(hour)
-					remain += hourInt
-					resultChan <- Result{nil, issue}
+					resultChan <- Result{nil, issue, hourInt}
 					return
 				}
-				resultChan <- Result{fillHoursResponse, ""}
+				resultChan <- Result{fillHoursResponse, "", 0}
 			}(hour, issue)
 		}
 	}
@@ -111,6 +111,7 @@ func (f FillHoursMany) fillIssuesResult(issues []string, hours []string, comment
 		if data.success != nil {
 			fillSuccess = append(fillSuccess, data.success)
 		} else {
+			remain += data.failureRemain
 			fillErrors = append(fillErrors, data.failure)
 		}
 	}

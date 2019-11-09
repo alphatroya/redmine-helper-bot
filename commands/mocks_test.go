@@ -3,11 +3,13 @@ package commands
 import (
 	"fmt"
 	"strconv"
+	"sync"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 )
 
 type RedmineMock struct {
+	sync.RWMutex
 	mockActivities     []*redmine.Activities
 	mockTimeEntries    []*redmine.TimeEntryResponse
 	err                error
@@ -37,7 +39,9 @@ func (r *RedmineMock) FillHoursRequest(issueID string, hours string, comment str
 }
 
 func (r *RedmineMock) mockResponse(issueID string, hours string) (*redmine.TimeEntryBodyResponse, error) {
+	r.Lock()
 	r.filledIssues = append(r.filledIssues, issueID)
+	r.Unlock()
 	hoursInt, _ := strconv.Atoi(hours)
 	intIssueID, _ := strconv.Atoi(issueID)
 	timeEntry := redmine.TimeEntryResponse{
