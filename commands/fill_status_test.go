@@ -43,7 +43,7 @@ func TestFillStatus_Handle(t *testing.T) {
 		},
 	}
 	for _, item := range table {
-		sut := NewFillStatus(RedmineMock{mockTimeEntries: item.mockEntries}, 5)
+		sut := NewFillStatus(&RedmineMock{mockTimeEntries: item.mockEntries}, 5)
 		result, err := sut.Handle("")
 		if err != nil {
 			t.Errorf("success conditions should complete without error, got: %s", err)
