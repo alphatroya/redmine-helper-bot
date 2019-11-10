@@ -72,7 +72,7 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 		failureTable := tablewriter.NewWriter(failureTableString)
 		failureTable.SetHeader([]string{"Задача"})
 		for _, issue := range fillErrors {
-			failureTable.Append([]string{fmt.Sprintf("%s", issue)})
+			failureTable.Append([]string{issue})
 		}
 		failureTable.Render()
 		responseMessage += "`" + failureTableString.String() + "`\n"
