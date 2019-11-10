@@ -32,7 +32,7 @@ func (r *RedmineMock) SetHost(host string) {
 }
 
 func (r *RedmineMock) FillHoursRequest(issueID string, hours string, comment string, activityID string) (*redmine.TimeEntryBodyResponse, error) {
-	if isError, _ := r.fillHoursErrorsMap[issueID]; isError {
+	if isError := r.fillHoursErrorsMap[issueID]; isError {
 		return nil, fmt.Errorf("mock error")
 	}
 	return r.mockResponse(issueID, hours)

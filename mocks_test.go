@@ -1,44 +1,6 @@
 package main
 
-import (
-	"github.com/alphatroya/redmine-helper-bot/redmine"
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-)
-
-type RedmineClientMock struct {
-	host          string
-	token         string
-	response      interface{}
-	responseError error
-}
-
-func (r *RedmineClientMock) Activities() ([]*redmine.Activities, error) {
-	panic("implement me")
-}
-
-func (r *RedmineClientMock) AssignedIssues() ([]*redmine.Issue, error) {
-	panic("implement me")
-}
-
-func (r *RedmineClientMock) FillHoursRequest(issueID string, hours string, comment string, activityID string) (*redmine.TimeEntryBodyResponse, error) {
-	return r.response.(*redmine.TimeEntryBodyResponse), r.responseError
-}
-
-func (r *RedmineClientMock) SetToken(token string) {
-	r.token = token
-}
-
-func (r *RedmineClientMock) SetHost(host string) {
-	r.host = host
-}
-
-func (r *RedmineClientMock) SetFillHoursResponse(body *redmine.TimeEntryBodyResponse, responseError error) {
-	r.response, r.responseError = body, responseError
-}
-
-func (r *RedmineClientMock) Issue(issueID string) (*redmine.IssueContainer, error) {
-	return nil, r.responseError
-}
+import tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 
 type MockBotSender struct {
 	text string

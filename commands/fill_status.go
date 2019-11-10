@@ -27,10 +27,10 @@ func (f FillStatus) Handle(message string) (*CommandResult, error) {
 	for _, timeEntry := range timeEntries {
 		sum += timeEntry.Hours
 	}
-	message = fmt.Sprintf(`Вы сегодня работали *%.1f ч.*`, sum)
+	resultMessage := fmt.Sprintf(`Вы сегодня работали *%.1f ч.*`, sum)
 
 	if len(timeEntries) > 0 {
-		message += "\n\n"
+		resultMessage += "\n\n"
 
 		tableString := &strings.Builder{}
 		table := tablewriter.NewWriter(tableString)
@@ -46,9 +46,9 @@ func (f FillStatus) Handle(message string) (*CommandResult, error) {
 			table.Append(data)
 		}
 		table.Render()
-		message += "`" + tableString.String() + "`"
+		resultMessage += "`" + tableString.String() + "`"
 	}
-	return NewCommandResult(message), nil
+	return NewCommandResult(resultMessage), nil
 }
 
 func (f FillStatus) IsCompleted() bool {
