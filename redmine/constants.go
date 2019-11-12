@@ -1,5 +1,5 @@
 package redmine
 
 const (
-	IssueIDRegex = `^#?[0-9]+$`
+	issueIDRegex = `^#?[0-9]+$`
 )
