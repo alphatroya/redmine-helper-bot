@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -65,7 +64,7 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 
 	var responseMessage string
 	if len(fillErrors) != 0 {
-		responseMessage = "Задачи *частично* обновлены, обновленные задачи\n\n"
+		responseMessage = fmt.Sprintf("Задачи([%d](%s/time_entries)) *частично* обновлены, обновленные задачи\n\n", len(issues)-len(fillErrors), host)
 		responseMessage += "`" + successTableString.String() + "`\n"
 		responseMessage += "Не удалось обновить задачи\n\n"
 		failureTableString := &strings.Builder{}
@@ -158,8 +157,7 @@ func (f FillHoursMany) getIssuesAndComment(message string) ([]string, string, er
 	issuesMap := make(map[string]bool)
 	var comment string
 	for i, fragment := range fragments {
-		if regexp.MustCompile(`^#?[0-9]+$`).MatchString(fragment) {
-			trimmed := strings.TrimLeft(fragment, "#")
+		if trimmed, ok := redmine.CheckAndExtractIssueID(fragment); ok {
 			issuesMap[trimmed] = true
 		} else {
 			comment = strings.Join(fragments[i:], " ")

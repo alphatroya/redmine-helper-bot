@@ -226,7 +226,7 @@ func successMessage(host string, success bool, tasks []struct {
 	if success {
 		result = fmt.Sprintf("Задачи([%d](%s/time_entries)) успешно обновлены!\n\n", len(tasks), host)
 	} else {
-		result = "Задачи *частично* обновлены, обновленные задачи\n\n"
+		result = fmt.Sprintf("Задачи([%d](%s/time_entries)) *частично* обновлены, обновленные задачи\n\n", len(tasks), host)
 	}
 	result += "`+--------+------+\n"
 	result += "| ЗАДАЧА | ЧАСЫ |\n"

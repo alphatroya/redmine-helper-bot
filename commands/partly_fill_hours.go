@@ -125,8 +125,7 @@ func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, err
 		issueID = parts[0]
 	}
 
-	regex := regexp.MustCompile(`^[0-9]+$`)
-	if !regex.MatchString(issueID) {
+	if !regexp.MustCompile(`^[0-9]+$`).MatchString(issueID) {
 		return nil, fmt.Errorf(WrongFillHoursWrongIssueIDResponse)
 	}
 	return p.issueIDSuccess(issueID)
