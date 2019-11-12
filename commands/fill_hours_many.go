@@ -65,7 +65,7 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 
 	var responseMessage string
 	if len(fillErrors) != 0 {
-		responseMessage = "Задачи *частично* обновлены, обновленные задачи\n\n"
+		responseMessage = fmt.Sprintf("Задачи([%d](%s/time_entries)) *частично* обновлены, обновленные задачи\n\n", len(issues)-len(fillErrors), host)
 		responseMessage += "`" + successTableString.String() + "`\n"
 		responseMessage += "Не удалось обновить задачи\n\n"
 		failureTableString := &strings.Builder{}
