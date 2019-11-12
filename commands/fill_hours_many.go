@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -158,8 +157,7 @@ func (f FillHoursMany) getIssuesAndComment(message string) ([]string, string, er
 	issuesMap := make(map[string]bool)
 	var comment string
 	for i, fragment := range fragments {
-		if regexp.MustCompile(redmine.IssueIDRegex).MatchString(fragment) {
-			trimmed := strings.TrimLeft(fragment, "#")
+		if trimmed, ok := redmine.CheckAndExtractIssueID(fragment); ok {
 			issuesMap[trimmed] = true
 		} else {
 			comment = strings.Join(fragments[i:], " ")
