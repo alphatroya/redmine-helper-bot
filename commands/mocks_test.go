@@ -10,13 +10,18 @@ import (
 
 type RedmineMock struct {
 	sync.RWMutex
-	mockActivities     []*redmine.Activities
-	mockTimeEntries    []*redmine.TimeEntryResponse
-	err                error
-	fillHoursErrorsMap map[string]bool
-	filledIssues       []string
-	mockIssue          *redmine.IssueContainer
-	mockIssueErr       error
+	mockActivities      []*redmine.Activities
+	mockTimeEntries     []*redmine.TimeEntryResponse
+	err                 error
+	fillHoursErrorsMap  map[string]bool
+	filledIssues        []string
+	mockIssue           *redmine.IssueContainer
+	mockIssueErr        error
+	mockAddCommentError error
+}
+
+func (r *RedmineMock) AddComment(issueID string, comment string) error {
+	return r.mockAddCommentError
 }
 
 func (r *RedmineMock) TodayTimeEntries() ([]*redmine.TimeEntryResponse, error) {
