@@ -15,6 +15,7 @@ type AddComment struct {
 	storage       storage.Manager
 	chatID        int64
 	issueID       string
+	comment       string
 	completed     bool
 }
 
@@ -31,24 +32,18 @@ func (a *AddComment) Handle(message string) (*CommandResult, error) {
 	if len(a.issueID) == 0 {
 		return a.firstPhase(message, host)
 	}
-
-	message = strings.TrimSpace(message)
-	if len(message) == 0 {
-		return nil, errors.New("Введен пустой комментарий")
+	if len(a.comment) == 0 {
+		return a.secondPhase(message, host)
 	}
-
-	err = a.redmineClient.AddComment(a.issueID, message)
-	if err != nil {
-		return nil, err
+	switch strings.ToLower(message) {
+	case "да":
+		return a.secondPhase(a.comment, host)
+	case "нет":
+		a.completed = true
+		return NewCommandResult("Операция отменена"), nil
+	default:
+		return NewCommandResult(`Вы должны написать "да" или "нет"`), nil
 	}
-
-	a.completed = true
-	return NewCommandResult(fmt.Sprintf(
-		"Комментарий добавлен в задачу [#%s](%s/issues/%s)",
-		a.issueID,
-		host,
-		a.issueID,
-	)), nil
 }
 
 func (a *AddComment) firstPhase(message string, host string) (*CommandResult, error) {
@@ -70,6 +65,27 @@ func (a *AddComment) firstPhase(message string, host string) (*CommandResult, er
 	}
 	a.issueID = issueID
 	return NewCommandResult(responseMessage), nil
+}
+
+func (a *AddComment) secondPhase(message string, host string) (*CommandResult, error) {
+	message = strings.TrimSpace(message)
+	if len(message) == 0 {
+		return nil, errors.New("Введен пустой комментарий")
+	}
+	err := a.redmineClient.AddComment(a.issueID, message)
+	if err != nil {
+		a.comment = message
+		return NewCommandResult(
+			fmt.Sprintf("Комментарий *не* добавлен в задачу [#%s](%s/issues/%s)\nПовторить запрос? (*да*/нет)", a.issueID, host, a.issueID),
+		), nil
+	}
+	a.completed = true
+	return NewCommandResult(fmt.Sprintf(
+		"Комментарий добавлен в задачу [#%s](%s/issues/%s)",
+		a.issueID,
+		host,
+		a.issueID,
+	)), nil
 }
 
 func (a *AddComment) IsCompleted() bool {
