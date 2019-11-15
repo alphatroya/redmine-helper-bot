@@ -25,6 +25,7 @@ func TestBotCommandsBuilder_Build(t *testing.T) {
 		{"*commands.UnknownCommand", "", "fh"},
 		{"*commands.FillStatus", "", "fstatus"},
 		{"*commands.FillHoursMany", "", "fhm"},
+		{"*commands.AddComment", "", "comment"},
 	}
 	for _, input := range checkData {
 		mockStorage := storage.NewStorageMock()
