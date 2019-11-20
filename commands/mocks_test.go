@@ -20,7 +20,7 @@ type RedmineMock struct {
 	mockAddCommentError error
 }
 
-func (r *RedmineMock) AddComment(issueID string, comment string) error {
+func (r *RedmineMock) AddComment(issueID string, comment string, assignedTo int) error {
 	return r.mockAddCommentError
 }
 

@@ -17,7 +17,7 @@ type Client interface {
 	AssignedIssues() ([]*Issue, error)
 	Activities() ([]*Activities, error)
 	TodayTimeEntries() ([]*TimeEntryResponse, error)
-	AddComment(issueID string, comment string) error
+	AddComment(issueID string, comment string, assignedTo int) error
 }
 
 func WrongStatusCodeError(statusCode int, statusText string) error {

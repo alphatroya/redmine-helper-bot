@@ -113,6 +113,10 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 		}{
 			Name: "Иванов Иван",
 		},
+		Author: struct {
+			ID   int    `json:"id"`
+			Name string `json:"name"`
+		}{ID: 111, Name: "Тест Тест"},
 		Status: struct {
 			ID   int    `json:"id"`
 			Name string `json:"name"`
@@ -124,6 +128,7 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 
 	testData := []struct {
 		command       string
+		isRefuse      bool
 		result        string
 		resultErr     string
 		addCommentErr error
@@ -132,6 +137,12 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 		{
 			command:   "Test",
 			result:    fmt.Sprintf("Комментарий добавлен в задачу [#%s](%s/issues/%s)", issueID, host, issueID),
+			completed: true,
+		},
+		{
+			command:   "Test",
+			isRefuse:  true,
+			result:    fmt.Sprintf("Комментарий добавлен в задачу [#%s](%s/issues/%s) и назначен на: %s", issueID, host, issueID, mockIssue.Author.Name),
 			completed: true,
 		},
 		{
@@ -164,6 +175,7 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 		}
 
 		command := NewAddComment(redmineMock, storageMock, chatID)
+		command.isReject = testCase.isRefuse
 		_, _ = command.Handle(issueID)
 		result, err := command.Handle(testCase.command)
 		completed := command.IsCompleted()
