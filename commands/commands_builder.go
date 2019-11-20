@@ -51,6 +51,11 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 	case "comment":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
 		return NewAddComment(redmineClient, b.storage, chatID)
+	case "reject":
+		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
+		command := NewAddComment(redmineClient, b.storage, chatID)
+		command.isReject = true
+		return command
 	default:
 		return NewUnknownCommand()
 	}

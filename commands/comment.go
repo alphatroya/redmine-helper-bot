@@ -15,8 +15,10 @@ type AddComment struct {
 	storage       storage.Manager
 	chatID        int64
 	issueID       string
+	updatingIssue *redmine.Issue
 	comment       string
 	completed     bool
+	isReject      bool
 }
 
 func NewAddComment(redmineClient redmine.Client, storage storage.Manager, chatID int64) *AddComment {
@@ -54,6 +56,7 @@ func (a *AddComment) firstPhase(message string, host string) (*CommandResult, er
 	responseMessage := fmt.Sprintf("Добавьте комментарий к задаче [#%s](%s/issues/%s)", issueID, host, issueID)
 	result, err := a.redmineClient.Issue(issueID)
 	if err == nil {
+		a.updatingIssue = result.Issue
 		tableString := &strings.Builder{}
 		tableString.WriteString(fmt.Sprintf("\n\n\n*%s*\n\n`", result.Issue.Subject))
 		table := tablewriter.NewWriter(tableString)
@@ -72,7 +75,12 @@ func (a *AddComment) secondPhase(message string, host string) (*CommandResult, e
 	if len(message) == 0 {
 		return nil, errors.New("Введен пустой комментарий")
 	}
-	err := a.redmineClient.AddComment(a.issueID, message)
+	var err error
+	if a.isReject && a.updatingIssue != nil {
+		err = a.redmineClient.AddComment(a.issueID, message, a.updatingIssue.Author.ID)
+	} else {
+		err = a.redmineClient.AddComment(a.issueID, message, 0)
+	}
 	if err != nil {
 		a.comment = message
 		return NewCommandResult(
@@ -80,12 +88,16 @@ func (a *AddComment) secondPhase(message string, host string) (*CommandResult, e
 		), nil
 	}
 	a.completed = true
-	return NewCommandResult(fmt.Sprintf(
+	message = fmt.Sprintf(
 		"Комментарий добавлен в задачу [#%s](%s/issues/%s)",
 		a.issueID,
 		host,
 		a.issueID,
-	)), nil
+	)
+	if a.isReject && a.updatingIssue != nil {
+		message += fmt.Sprintf(" и назначен на: %s", a.updatingIssue.Author.Name)
+	}
+	return NewCommandResult(message), nil
 }
 
 func (a *AddComment) IsCompleted() bool {

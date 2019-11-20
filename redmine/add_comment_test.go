@@ -18,7 +18,7 @@ func TestClientManager_AddComment(t *testing.T) {
 		storageMock.SetHost("http://google.com", 10)
 		storageMock.SetToken("fdjsdfjs", 10)
 		redmine := NewClientManager(networkClient, storageMock, 10)
-		err := redmine.AddComment("4333", "FooBar")
+		err := redmine.AddComment("4333", "FooBar", 0)
 		if isError && err == nil {
 			t.Errorf("add comment not return error but it should")
 		} else if !isError && err != nil {
