@@ -44,7 +44,7 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 		return nil, errors.New("Вы ввели слишком много номеров задач. В целях точного распределения задач за день количество ограничено числом свободных за день часов")
 	}
 
-	hours := f.getHours(issuesCount, issues, remainingHours)
+	hours := f.getHours(issues, remainingHours)
 
 	host, err := f.storage.GetHost(f.chatID)
 	if err != nil {
@@ -123,9 +123,9 @@ func (f FillHoursMany) fillIssuesResult(issues []string, hours []string, comment
 	return
 }
 
-func (f FillHoursMany) getHours(issuesCount int, issues []string, remainingHours int) []string {
+func (f FillHoursMany) getHours(issues []string, remainingHours int) []string {
 	var hours []string
-	var remainingIssuesCount = issuesCount
+	var remainingIssuesCount = len(issues)
 	for range issues {
 		hour := int(math.Ceil(float64(remainingHours) / float64(remainingIssuesCount)))
 		hours = append(hours, fmt.Sprintf("%d", hour))
@@ -150,7 +150,7 @@ func (f FillHoursMany) getRemainingHours(timeEntries []*redmine.TimeEntryRespons
 
 func (f FillHoursMany) getIssuesAndComment(message string) ([]string, string, error) {
 	if len(message) == 0 {
-		return nil, "", errors.New("Введена неправильная команда")
+		return nil, "", errors.New(f.HelpMessage())
 	}
 
 	fragments := strings.Split(message, " ")
@@ -178,6 +178,29 @@ func (f FillHoursMany) getIssuesAndComment(message string) ([]string, string, er
 	})
 
 	return issues, comment, nil
+}
+
+func (f FillHoursMany) HelpMessage() string {
+	message := `
+*Команда служит для распределения свободных незаполненных часов между введенными задачами*
+
+_Синтаксис:_ '/fhm <один или несколько идентификаторов задач разделенных пробелом> <комментарий>'
+
+- Один комментарий будет установлен для всех перечисленных задач
+- Число задач не может быть больше числа свободных за сегодня часов
+
+_Пример:_ "/fhm 1 2 3 5 Исправление" при свободных *8 часах* установит значения:
+
+`
+	stringBuilder := &strings.Builder{}
+	table := tablewriter.NewWriter(stringBuilder)
+	table.SetHeader([]string{"ID", "Часы", "Комментарий"})
+	table.Append([]string{"1", "2", "Исправление"})
+	table.Append([]string{"2", "2", "Исправление"})
+	table.Append([]string{"3", "2", "Исправление"})
+	table.Append([]string{"5", "2", "Исправление"})
+	table.Render()
+	return message + "`" + stringBuilder.String() + "`"
 }
 
 func (f FillHoursMany) IsCompleted() bool {
