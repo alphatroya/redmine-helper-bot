@@ -131,6 +131,7 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 		isRefuse      bool
 		result        string
 		resultErr     string
+		resultButtons []string
 		addCommentErr error
 		completed     bool
 	}{
@@ -157,7 +158,8 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 		},
 		{
 			command:       "Test",
-			result:        fmt.Sprintf("Комментарий *не* добавлен в задачу [#%s](%s/issues/%s)\nПовторить запрос? (*да*/нет)", issueID, host, issueID),
+			result:        fmt.Sprintf("Комментарий *не был* добавлен в задачу [#%s](%s/issues/%s) 😞\n\nПовторить запрос?", issueID, host, issueID),
+			resultButtons: []string{"Да", "Нет"},
 			addCommentErr: errors.New("error mock"),
 			completed:     false,
 		},
@@ -184,15 +186,23 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 			t.Errorf("completed status is not same to expected, got: %t, expected: %t", completed, testCase.completed)
 		}
 
+		if result != nil {
+			if (result.buttons == nil) != (testCase.resultButtons == nil) || len(result.buttons) != len(testCase.resultButtons) {
+				t.Errorf("buttons not match, got: %#v, expected: %#v", result.buttons, testCase.resultButtons)
+			}
+
+			for i := range result.buttons {
+				if result.buttons[i] != testCase.resultButtons[i] {
+					t.Errorf("button's title at %d not match, got: %s, expected: %s", i, result.buttons[i], testCase.resultButtons[i])
+				}
+			}
+		}
+
 		if err != nil {
 			if err.Error() != testCase.resultErr {
 				t.Errorf("command return wrong error\ngot: %s\nexpected: %s", err, testCase.resultErr)
 			}
 			continue
-		}
-
-		if len(result.buttons) != 0 {
-			t.Error("success command should not return buttons")
 		}
 
 		if result.Message() != testCase.result {
