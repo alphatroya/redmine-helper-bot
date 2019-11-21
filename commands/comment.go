@@ -83,8 +83,9 @@ func (a *AddComment) secondPhase(message string, host string) (*CommandResult, e
 	}
 	if err != nil {
 		a.comment = message
-		return NewCommandResult(
-			fmt.Sprintf("Комментарий *не* добавлен в задачу [#%s](%s/issues/%s)\nПовторить запрос? (*да*/нет)", a.issueID, host, a.issueID),
+		return NewCommandResultWithKeyboard(
+			fmt.Sprintf("Комментарий *не был* добавлен в задачу [#%s](%s/issues/%s) 😞\n\nПовторить запрос?", a.issueID, host, a.issueID),
+			[]string{"Да", "Нет"},
 		), nil
 	}
 	a.completed = true
