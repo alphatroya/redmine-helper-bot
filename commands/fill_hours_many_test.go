@@ -176,7 +176,7 @@ func TestFillHoursMany_Handle(t *testing.T) {
 		{
 			input:     "",
 			output:    "",
-			resultErr: "Введена неправильная команда",
+			resultErr: NewFillHoursMany(nil, nil, 0).HelpMessage(),
 		},
 		{
 			input:     "53223 43231 33321",
@@ -262,5 +262,14 @@ func TestFillHoursMany_IsCompleted(t *testing.T) {
 	command := NewFillHoursMany(redmineMock, storageMock, 5)
 	if !command.IsCompleted() {
 		t.Errorf("Fill command should always be completed")
+	}
+}
+
+func TestFillHoursMany_HelpMessage(t *testing.T) {
+	storageMock := storage.NewStorageMock()
+	redmineMock := &RedmineMock{}
+	command := NewFillHoursMany(redmineMock, storageMock, 5)
+	if len(command.HelpMessage()) == 0 {
+		t.Errorf("Help message should not be empty")
 	}
 }
