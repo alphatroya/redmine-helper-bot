@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/olekukonko/tablewriter"
+
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/alphatroya/redmine-helper-bot/storage"
 )
@@ -37,7 +39,7 @@ func NewFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, 
 	command := newPartlyFillHoursCommand(redmineClient, storage, chatID)
 	split := strings.Split(message, " ")
 	if len(split) < 3 {
-		return nil, fmt.Errorf("Введена неправильная команда")
+		return nil, fmt.Errorf(command.HelpMessage())
 	}
 	command.issuesRequested = true
 	_, err := command.setIssueID(split[0])
@@ -177,4 +179,21 @@ func (p *PartlyFillHoursCommand) makeFillRequest() (*CommandResult, error) {
 	issue, _ := p.redmineClient.Issue(p.issueID)
 	p.isCompleted = true
 	return NewCommandResult(SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, issue, requestBody.TimeEntry.Hours, host)), nil
+}
+
+func (p *PartlyFillHoursCommand) HelpMessage() string {
+	message := `
+*Команда служит для быстрого заполнения часов для указанной задачи*
+
+_Синтаксис:_ '/fh <номер задачи> <часы> <комментарий>'
+
+_Пример:_ "/fh 1 8 Исправление" установит значения:
+
+`
+	stringBuilder := &strings.Builder{}
+	table := tablewriter.NewWriter(stringBuilder)
+	table.SetHeader([]string{"ID", "Часы", "Комментарий"})
+	table.Append([]string{"1", "8", "Исправление"})
+	table.Render()
+	return message + "`" + stringBuilder.String() + "`"
 }
