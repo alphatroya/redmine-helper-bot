@@ -6,8 +6,8 @@ type Command interface {
 }
 
 type CommandResult struct {
-	message string
-	buttons []string
+	messages []string
+	buttons  []string
 }
 
 func (c *CommandResult) Buttons() []string {
@@ -15,13 +15,21 @@ func (c *CommandResult) Buttons() []string {
 }
 
 func (c *CommandResult) Message() string {
-	return c.message
+	return c.messages[0]
+}
+
+func (c *CommandResult) Messages() []string {
+	return c.messages
 }
 
 func NewCommandResult(message string) *CommandResult {
-	return &CommandResult{message: message}
+	return &CommandResult{messages: []string{message}}
+}
+
+func NewCommandResultWithMessages(messages []string) *CommandResult {
+	return &CommandResult{messages: messages}
 }
 
 func NewCommandResultWithKeyboard(message string, buttons []string) *CommandResult {
-	return &CommandResult{message: message, buttons: buttons}
+	return &CommandResult{messages: []string{message}, buttons: buttons}
 }

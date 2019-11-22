@@ -24,8 +24,8 @@ func TestPartlyFillHoursCommand_Handle(t *testing.T) {
 		sut.isCompleted = item.isCompleted
 		sut.isHoursSet = item.isHoursSet
 		result, err := sut.Handle(item.message)
-		if result != nil && result.message != item.result.message {
-			t.Errorf("wrong result from handle method, got: %s, expected: %s", result.message, item.result.message)
+		if result != nil && result.Message() != item.result.Message() {
+			t.Errorf("wrong result from handle method, got: %s, expected: %s", result.Message(), item.result.Message())
 		}
 		if err != nil && err != item.err {
 			t.Errorf("wrong error from handle method, got: %s, expected: %s", err, item.err)

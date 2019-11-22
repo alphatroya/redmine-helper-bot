@@ -66,6 +66,7 @@ func TestAddComment_Handle(t *testing.T) {
 	}
 
 	for _, testCase := range testData {
+		printerMock := PrinterMock{}
 		storageMock := storage.NewStorageMock()
 		var chatID int64 = 5
 		storageMock.SetHost(host, chatID)
@@ -78,7 +79,7 @@ func TestAddComment_Handle(t *testing.T) {
 			redmineMock.mockIssueErr = testCase.issueErr
 		}
 
-		command := NewAddComment(redmineMock, storageMock, chatID)
+		command := NewAddComment(redmineMock, storageMock, printerMock, chatID)
 		result, err := command.Handle(testCase.command)
 		completed := command.IsCompleted()
 
@@ -176,7 +177,8 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 			redmineMock.mockAddCommentError = testCase.addCommentErr
 		}
 
-		command := NewAddComment(redmineMock, storageMock, chatID)
+		printerMock := PrinterMock{}
+		command := NewAddComment(redmineMock, storageMock, printerMock, chatID)
 		command.isReject = testCase.isRefuse
 		_, _ = command.Handle(issueID)
 		result, err := command.Handle(testCase.command)
@@ -291,7 +293,8 @@ func TestAddComment_Handle_Phase3(t *testing.T) {
 		redmineMock.mockIssue = &redmine.IssueContainer{Issue: mockIssue}
 		redmineMock.mockAddCommentError = errors.New("error during fill hours")
 
-		command := NewAddComment(redmineMock, storageMock, chatID)
+		printerMock := PrinterMock{}
+		command := NewAddComment(redmineMock, storageMock, printerMock, chatID)
 		_, _ = command.Handle(issueID)
 		_, _ = command.Handle(testCase.message)
 		redmineMock.mockAddCommentError = nil
@@ -323,7 +326,8 @@ func TestAddComment_Handle_EmptyHost(t *testing.T) {
 	storageMock := storage.NewStorageMock()
 	var chatID int64 = 5
 	redmineMock := &RedmineMock{}
-	command := NewAddComment(redmineMock, storageMock, chatID)
+	printerMock := PrinterMock{}
+	command := NewAddComment(redmineMock, storageMock, printerMock, chatID)
 	_, err := command.Handle("Foo")
 	if err == nil {
 		t.Errorf("Empty storage case should return an error")

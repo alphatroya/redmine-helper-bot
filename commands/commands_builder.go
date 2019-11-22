@@ -13,10 +13,11 @@ type Builder interface {
 
 type BotCommandsBuilder struct {
 	storage storage.Manager
+	printer redmine.Printer
 }
 
 func NewBotCommandsBuilder(storage storage.Manager) *BotCommandsBuilder {
-	return &BotCommandsBuilder{storage: storage}
+	return &BotCommandsBuilder{storage: storage, printer: redmine.TablePrinter{}}
 }
 
 func (b BotCommandsBuilder) Build(command string, message string, chatID int64) Command {
@@ -50,10 +51,10 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 		return NewFillStatus(redmineClient, chatID)
 	case "comment":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		return NewAddComment(redmineClient, b.storage, chatID)
+		return NewAddComment(redmineClient, b.storage, b.printer, chatID)
 	case "reject":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		command := NewAddComment(redmineClient, b.storage, chatID)
+		command := NewAddComment(redmineClient, b.storage, b.printer, chatID)
 		command.isReject = true
 		return command
 	default:

@@ -7,12 +7,12 @@ import (
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/alphatroya/redmine-helper-bot/storage"
-	"github.com/olekukonko/tablewriter"
 )
 
 type AddComment struct {
 	redmineClient redmine.Client
 	storage       storage.Manager
+	printer       redmine.Printer
 	chatID        int64
 	issueID       string
 	updatingIssue *redmine.Issue
@@ -21,8 +21,8 @@ type AddComment struct {
 	isReject      bool
 }
 
-func NewAddComment(redmineClient redmine.Client, storage storage.Manager, chatID int64) *AddComment {
-	return &AddComment{redmineClient: redmineClient, storage: storage, chatID: chatID}
+func NewAddComment(redmineClient redmine.Client, storage storage.Manager, printer redmine.Printer, chatID int64) *AddComment {
+	return &AddComment{redmineClient: redmineClient, storage: storage, printer: printer, chatID: chatID}
 }
 
 func (a *AddComment) Handle(message string) (*CommandResult, error) {
@@ -53,21 +53,28 @@ func (a *AddComment) firstPhase(message string, host string) (*CommandResult, er
 	if !ok {
 		return nil, errors.New("Вы ввели неправильный номер задачи")
 	}
-	responseMessage := fmt.Sprintf("Добавьте комментарий к задаче [#%s](%s/issues/%s)", issueID, host, issueID)
+	var responseMessage []string
 	result, err := a.redmineClient.Issue(issueID)
 	if err == nil {
 		a.updatingIssue = result.Issue
-		tableString := &strings.Builder{}
-		tableString.WriteString(fmt.Sprintf("\n\n\n*%s*\n\n`", result.Issue.Subject))
-		table := tablewriter.NewWriter(tableString)
-		table.Append([]string{fmt.Sprintf("СТАТУС"), result.Issue.Status.Name})
-		table.Append([]string{fmt.Sprintf("АВТОР"), result.Issue.Author.Name})
-		table.Append([]string{fmt.Sprintf("НАЗНАЧЕНО"), result.Issue.AssignedTo.Name})
-		table.Render()
-		responseMessage += tableString.String() + "`"
+		//tableString := &strings.Builder{}
+		//tableString.WriteString(fmt.Sprintf("\n\n\n*%s*\n\n`", result.Issue.Subject))
+		//table := tablewriter.NewWriter(tableString)
+		//table.Append([]string{fmt.Sprintf("СТАТУС"), result.Issue.Status.Name})
+		//table.Append([]string{fmt.Sprintf("АВТОР"), result.Issue.Author.Name})
+		//table.Append([]string{fmt.Sprintf("НАЗНАЧЕНО"), result.Issue.AssignedTo.Name})
+		//table.Render()
+		//responseMessage += tableString.String() + "`"
+		printedIssue := a.printer.Print(*result.Issue, false)
+		for _, element := range printedIssue {
+			responseMessage = append(responseMessage, element)
+		}
+		responseMessage = append(responseMessage, "_Напишите комментарий к задаче_")
+	} else {
+		responseMessage = []string{fmt.Sprintf("Напишите комментарий к задаче [#%s](%s/issues/%s)", issueID, host, issueID)}
 	}
 	a.issueID = issueID
-	return NewCommandResult(responseMessage), nil
+	return NewCommandResultWithMessages(responseMessage), nil
 }
 
 func (a *AddComment) secondPhase(message string, host string) (*CommandResult, error) {
