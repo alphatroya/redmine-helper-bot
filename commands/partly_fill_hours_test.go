@@ -137,3 +137,10 @@ func TestNewFillHoursCommand(t *testing.T) {
 		}
 	}
 }
+
+func TestPartlyFillHoursCommand_HelpMessage(t *testing.T) {
+	helpMessage := newPartlyFillHoursCommand(nil, nil, 0).HelpMessage()
+	if len(helpMessage) == 0 {
+		t.Errorf("help message should now be nil")
+	}
+}
