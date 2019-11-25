@@ -20,12 +20,13 @@ func TestPartlyFillHoursCommand_Handle(t *testing.T) {
 	for _, item := range data {
 		redmineMock := &RedmineMock{}
 		storageMock := storage.NewStorageMock()
-		sut := newPartlyFillHoursCommand(redmineMock, storageMock, 1)
+		printerMock := PrinterMock{}
+		sut := newPartlyFillHoursCommand(redmineMock, printerMock, storageMock, 1)
 		sut.isCompleted = item.isCompleted
 		sut.isHoursSet = item.isHoursSet
 		result, err := sut.Handle(item.message)
-		if result != nil && result.message != item.result.message {
-			t.Errorf("wrong result from handle method, got: %s, expected: %s", result.message, item.result.message)
+		if result != nil && result.Message() != item.result.Message() {
+			t.Errorf("wrong result from handle method, got: %s, expected: %s", result.Message(), item.result.Message())
 		}
 		if err != nil && err != item.err {
 			t.Errorf("wrong error from handle method, got: %s, expected: %s", err, item.err)
@@ -36,6 +37,7 @@ func TestPartlyFillHoursCommand_Handle(t *testing.T) {
 func TestNewFillHoursCommand(t *testing.T) {
 	redmineMock := &RedmineMock{}
 	storageMock := storage.NewStorageMock()
+	printerMock := PrinterMock{}
 	data := []struct {
 		message string
 		chatID  int64
@@ -47,6 +49,7 @@ func TestNewFillHoursCommand(t *testing.T) {
 			5,
 			&PartlyFillHoursCommand{
 				redmineClient:   redmineMock,
+				printer:         printerMock,
 				storage:         storageMock,
 				chatID:          5,
 				issuesRequested: true,
@@ -57,6 +60,7 @@ func TestNewFillHoursCommand(t *testing.T) {
 				activityID:      "",
 				hours:           "8",
 				comment:         "Test",
+				shortVersion:    true,
 			},
 			false,
 		},
@@ -65,6 +69,7 @@ func TestNewFillHoursCommand(t *testing.T) {
 			5,
 			&PartlyFillHoursCommand{
 				redmineClient:   redmineMock,
+				printer:         printerMock,
 				storage:         storageMock,
 				chatID:          5,
 				issuesRequested: true,
@@ -75,6 +80,7 @@ func TestNewFillHoursCommand(t *testing.T) {
 				activityID:      "",
 				hours:           "8",
 				comment:         "Test test",
+				shortVersion:    true,
 			},
 			false,
 		},
@@ -83,6 +89,7 @@ func TestNewFillHoursCommand(t *testing.T) {
 			5,
 			&PartlyFillHoursCommand{
 				redmineClient:   redmineMock,
+				printer:         printerMock,
 				storage:         storageMock,
 				chatID:          5,
 				issuesRequested: true,
@@ -93,6 +100,7 @@ func TestNewFillHoursCommand(t *testing.T) {
 				activityID:      "",
 				hours:           "8",
 				comment:         "Test test",
+				shortVersion:    true,
 			},
 			false,
 		},
@@ -128,7 +136,7 @@ func TestNewFillHoursCommand(t *testing.T) {
 		},
 	}
 	for _, item := range data {
-		result, err := NewFillHoursCommand(redmineMock, storageMock, item.chatID, item.message)
+		result, err := NewFillHoursCommand(redmineMock, printerMock, storageMock, item.chatID, item.message)
 		if item.isErr && err == nil {
 			t.Errorf("not getting error when should")
 		}
@@ -139,7 +147,7 @@ func TestNewFillHoursCommand(t *testing.T) {
 }
 
 func TestPartlyFillHoursCommand_HelpMessage(t *testing.T) {
-	helpMessage := newPartlyFillHoursCommand(nil, nil, 0).HelpMessage()
+	helpMessage := newPartlyFillHoursCommand(nil, nil, nil, 0).HelpMessage()
 	if len(helpMessage) == 0 {
 		t.Errorf("help message should now be nil")
 	}

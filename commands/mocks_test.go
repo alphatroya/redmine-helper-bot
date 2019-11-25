@@ -70,3 +70,13 @@ func (r *RedmineMock) Issue(issueID string) (*redmine.IssueContainer, error) {
 func (r *RedmineMock) AssignedIssues() ([]*redmine.Issue, error) {
 	return nil, nil
 }
+
+type PrinterMock struct {
+}
+
+func (p PrinterMock) Print(issue redmine.Issue, printDescription bool) []string {
+	if printDescription {
+		return []string{"description"}
+	}
+	return []string{"empty"}
+}

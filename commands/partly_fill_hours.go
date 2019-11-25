@@ -15,6 +15,7 @@ import (
 
 type PartlyFillHoursCommand struct {
 	redmineClient   redmine.Client
+	printer         redmine.Printer
 	storage         storage.Manager
 	chatID          int64
 	issuesRequested bool
@@ -25,18 +26,19 @@ type PartlyFillHoursCommand struct {
 	activityID      string
 	hours           string
 	comment         string
+	shortVersion    bool
 }
 
 func (p *PartlyFillHoursCommand) IsCompleted() bool {
 	return p.isCompleted
 }
 
-func newPartlyFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, chatID int64) *PartlyFillHoursCommand {
-	return &PartlyFillHoursCommand{redmineClient: redmineClient, storage: storage, chatID: chatID}
+func newPartlyFillHoursCommand(redmineClient redmine.Client, printer redmine.Printer, storage storage.Manager, chatID int64) *PartlyFillHoursCommand {
+	return &PartlyFillHoursCommand{redmineClient: redmineClient, printer: printer, storage: storage, chatID: chatID}
 }
 
-func NewFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, chatID int64, message string) (*PartlyFillHoursCommand, error) {
-	command := newPartlyFillHoursCommand(redmineClient, storage, chatID)
+func NewFillHoursCommand(redmineClient redmine.Client, printer redmine.Printer, storage storage.Manager, chatID int64, message string) (*PartlyFillHoursCommand, error) {
+	command := newPartlyFillHoursCommand(redmineClient, printer, storage, chatID)
 	split := strings.Split(message, " ")
 	if len(split) < 3 {
 		return nil, fmt.Errorf(command.HelpMessage())
@@ -54,6 +56,7 @@ func NewFillHoursCommand(redmineClient redmine.Client, storage storage.Manager, 
 	if err != nil {
 		return nil, err
 	}
+	command.shortVersion = true
 	return command, nil
 }
 
@@ -136,11 +139,29 @@ func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, err
 func (p *PartlyFillHoursCommand) issueIDSuccess(issueID string) (*CommandResult, error) {
 	p.issueID = issueID
 	p.isIssueIDSet = true
-	var hourButtons []string
+	var buttons []string
 	for i := 1; i <= 8; i++ {
-		hourButtons = append(hourButtons, fmt.Sprintf("%d", i))
+		buttons = append(buttons, fmt.Sprintf("%d", i))
 	}
-	return NewCommandResultWithKeyboard("Номер задачи установлен, введите число часов", hourButtons), nil
+	successMessage := p.printIssueInfo("Номер задачи установлен, введите число часов", true)
+	return NewCommandResultWithMessagesAndKeyboard(successMessage, buttons), nil
+}
+
+func (p *PartlyFillHoursCommand) printIssueInfo(message string, italic bool) (successMessage []string) {
+	issue, _ := p.redmineClient.Issue(p.issueID)
+	if issue != nil {
+		for _, printed := range p.printer.Print(*issue.Issue, false) {
+			successMessage = append(successMessage, printed)
+		}
+		if italic {
+			successMessage = append(successMessage, "_"+message+"_")
+		} else {
+			successMessage = append(successMessage, message)
+		}
+	} else {
+		successMessage = append(successMessage, message)
+	}
+	return
 }
 
 func (p *PartlyFillHoursCommand) setHours(hours string) (*CommandResult, error) {
@@ -176,9 +197,14 @@ func (p *PartlyFillHoursCommand) makeFillRequest() (*CommandResult, error) {
 	if err != nil {
 		return nil, err
 	}
-	issue, _ := p.redmineClient.Issue(p.issueID)
 	p.isCompleted = true
-	return NewCommandResult(SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, issue, requestBody.TimeEntry.Hours, host)), nil
+	var successMessage []string
+	if p.shortVersion {
+		successMessage = p.printIssueInfo(SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, requestBody.TimeEntry.Hours, host), false)
+	} else {
+		successMessage = []string{SuccessFillHoursMessageResponse(requestBody.TimeEntry.Issue.ID, requestBody.TimeEntry.Hours, host)}
+	}
+	return NewCommandResultWithMessages(successMessage), nil
 }
 
 func (p *PartlyFillHoursCommand) HelpMessage() string {

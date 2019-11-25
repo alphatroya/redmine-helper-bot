@@ -50,32 +50,37 @@ func (t *UpdateHandler) HandleMessage(message string, chatID int64) {
 }
 
 func (t *UpdateHandler) sendMessage(chatID int64, result *commands.CommandResult, err error) {
-	var newMessage tgbotapi.MessageConfig
 	if err != nil {
-		newMessage = tgbotapi.NewMessage(chatID, err.Error())
+		newMessage := tgbotapi.NewMessage(chatID, err.Error())
 		newMessage.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
-	} else {
-		newMessage = tgbotapi.NewMessage(chatID, result.Message())
-		buttons := result.Buttons()
-		if len(buttons) != 0 {
-			var rows [][]tgbotapi.KeyboardButton
-			var keyboards []tgbotapi.KeyboardButton
-			for _, button := range buttons {
-				keyboards = append(keyboards, tgbotapi.NewKeyboardButton(button))
-				if len(keyboards) == 2 {
-					rows = append(rows, tgbotapi.NewKeyboardButtonRow(keyboards...))
-					keyboards = []tgbotapi.KeyboardButton{}
-				}
-			}
-			newMessage.ReplyMarkup = tgbotapi.NewReplyKeyboard(rows...)
-			//newMessage.ReplyMarkup = tgbotapi.NewReplyKeyboard(keyboards)
-		} else {
-			newMessage.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+		newMessage.ParseMode = tgbotapi.ModeMarkdown
+		_, err = t.bot.Send(newMessage)
+		if err != nil {
+			log.Printf("error during send operation, got: %s", err)
 		}
-	}
-	newMessage.ParseMode = tgbotapi.ModeMarkdown
-	_, err = t.bot.Send(newMessage)
-	if err != nil {
-		log.Printf("error during send operation, got: %s", err)
+	} else {
+		for i, message := range result.Messages() {
+			newMessage := tgbotapi.NewMessage(chatID, message)
+			buttons := result.Buttons()
+			if i == len(result.Messages())-1 && len(buttons) != 0 {
+				var rows [][]tgbotapi.KeyboardButton
+				var keyboards []tgbotapi.KeyboardButton
+				for _, button := range buttons {
+					keyboards = append(keyboards, tgbotapi.NewKeyboardButton(button))
+					if len(keyboards) == 2 {
+						rows = append(rows, tgbotapi.NewKeyboardButtonRow(keyboards...))
+						keyboards = []tgbotapi.KeyboardButton{}
+					}
+				}
+				newMessage.ReplyMarkup = tgbotapi.NewReplyKeyboard(rows...)
+			} else {
+				newMessage.ReplyMarkup = tgbotapi.NewRemoveKeyboard(true)
+			}
+			newMessage.ParseMode = tgbotapi.ModeMarkdown
+			_, err = t.bot.Send(newMessage)
+			if err != nil {
+				log.Printf("error during send operation, got: %s", err)
+			}
+		}
 	}
 }

@@ -13,10 +13,11 @@ type Builder interface {
 
 type BotCommandsBuilder struct {
 	storage storage.Manager
+	printer redmine.Printer
 }
 
 func NewBotCommandsBuilder(storage storage.Manager) *BotCommandsBuilder {
-	return &BotCommandsBuilder{storage: storage}
+	return &BotCommandsBuilder{storage: storage, printer: redmine.TablePrinter{}}
 }
 
 func (b BotCommandsBuilder) Build(command string, message string, chatID int64) Command {
@@ -27,7 +28,7 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 		return newSetHostCommand(b.storage, chatID)
 	case "fillhours":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		return newPartlyFillHoursCommand(redmineClient, b.storage, chatID)
+		return newPartlyFillHoursCommand(redmineClient, b.printer, b.storage, chatID)
 	case "activities":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
 		return newActivitiesCommand(redmineClient, b.storage, chatID)
@@ -40,7 +41,7 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 		return NewFillHoursMany(redmineClient, b.storage, chatID)
 	case "fh":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		command, err := NewFillHoursCommand(redmineClient, b.storage, chatID, message)
+		command, err := NewFillHoursCommand(redmineClient, b.printer, b.storage, chatID, message)
 		if err != nil {
 			return NewUnknownCommandWithMessage(err.Error())
 		}
@@ -50,10 +51,10 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 		return NewFillStatus(redmineClient, chatID)
 	case "comment":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		return NewAddComment(redmineClient, b.storage, chatID)
+		return NewAddComment(redmineClient, b.storage, b.printer, chatID)
 	case "reject":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		command := NewAddComment(redmineClient, b.storage, chatID)
+		command := NewAddComment(redmineClient, b.storage, b.printer, chatID)
 		command.isReject = true
 		return command
 	default:
