@@ -28,7 +28,7 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 		return newSetHostCommand(b.storage, chatID)
 	case "fillhours":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		return newPartlyFillHoursCommand(redmineClient, b.storage, chatID)
+		return newPartlyFillHoursCommand(redmineClient, b.printer, b.storage, chatID)
 	case "activities":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
 		return newActivitiesCommand(redmineClient, b.storage, chatID)
@@ -41,7 +41,7 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 		return NewFillHoursMany(redmineClient, b.storage, chatID)
 	case "fh":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		command, err := NewFillHoursCommand(redmineClient, b.storage, chatID, message)
+		command, err := NewFillHoursCommand(redmineClient, b.printer, b.storage, chatID, message)
 		if err != nil {
 			return NewUnknownCommandWithMessage(err.Error())
 		}

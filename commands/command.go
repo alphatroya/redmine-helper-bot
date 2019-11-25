@@ -33,3 +33,7 @@ func NewCommandResultWithMessages(messages []string) *CommandResult {
 func NewCommandResultWithKeyboard(message string, buttons []string) *CommandResult {
 	return &CommandResult{messages: []string{message}, buttons: buttons}
 }
+
+func NewCommandResultWithMessagesAndKeyboard(messages []string, buttons []string) *CommandResult {
+	return &CommandResult{messages: messages, buttons: buttons}
+}

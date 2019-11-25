@@ -57,14 +57,6 @@ func (a *AddComment) firstPhase(message string, host string) (*CommandResult, er
 	result, err := a.redmineClient.Issue(issueID)
 	if err == nil {
 		a.updatingIssue = result.Issue
-		//tableString := &strings.Builder{}
-		//tableString.WriteString(fmt.Sprintf("\n\n\n*%s*\n\n`", result.Issue.Subject))
-		//table := tablewriter.NewWriter(tableString)
-		//table.Append([]string{fmt.Sprintf("СТАТУС"), result.Issue.Status.Name})
-		//table.Append([]string{fmt.Sprintf("АВТОР"), result.Issue.Author.Name})
-		//table.Append([]string{fmt.Sprintf("НАЗНАЧЕНО"), result.Issue.AssignedTo.Name})
-		//table.Render()
-		//responseMessage += tableString.String() + "`"
 		printedIssue := a.printer.Print(*result.Issue, false)
 		for _, element := range printedIssue {
 			responseMessage = append(responseMessage, element)
