@@ -35,7 +35,7 @@ func TestAddComment_Handle(t *testing.T) {
 
 	testData := []struct {
 		command   string
-		result    string
+		result    []string
 		issue     *redmine.Issue
 		issueErr  error
 		resultErr string
@@ -51,17 +51,23 @@ func TestAddComment_Handle(t *testing.T) {
 		{
 			command: "43213",
 			issue:   mockIssue,
-			result:  fmt.Sprintf("Добавьте комментарий к задаче [#43213](%s/issues/43213)"+issuePrintMessage(), host),
+			result: []string{
+				"empty",
+				"_Напишите комментарий к задаче_",
+			},
 		},
 		{
 			command: "#43214",
 			issue:   mockIssue,
-			result:  fmt.Sprintf("Добавьте комментарий к задаче [#43214](%s/issues/43214)"+issuePrintMessage(), host),
+			result: []string{
+				"empty",
+				"_Напишите комментарий к задаче_",
+			},
 		},
 		{
 			command:  "#43214",
 			issueErr: fmt.Errorf("error"),
-			result:   fmt.Sprintf("Добавьте комментарий к задаче [#43214](%s/issues/43214)", host),
+			result:   []string{fmt.Sprintf("Напишите комментарий к задаче [#43214](%s/issues/43214)", host)},
 		},
 	}
 
@@ -98,8 +104,11 @@ func TestAddComment_Handle(t *testing.T) {
 			t.Error("success command should not return buttons")
 		}
 
-		if result.Message() != testCase.result {
-			t.Errorf("command: %s\nreturn wrong message\ngot: \"%s\"\nexpected: \"%s\"", testCase.command, result.Message(), testCase.result)
+		for i, caseResult := range testCase.result {
+			resultMessage := result.Messages()[i]
+			if resultMessage != caseResult {
+				t.Errorf("command: \"%s\"\nreturn wrong message\ngot: \"%s\"\nexpected: \"%s\"", testCase.command, resultMessage, caseResult)
+			}
 		}
 	}
 }
