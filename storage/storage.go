@@ -24,8 +24,8 @@ type Manager interface {
 }
 
 type RedisStorage struct {
-	redis        redisInstance
-	passphaseKey string
+	redis      redisInstance
+	passphrase string
 }
 
 const (
@@ -42,11 +42,11 @@ func (r RedisStorage) ResetData(chat int64) error {
 func (r RedisStorage) SetToken(token string, chat int64) {
 	chatString := fmt.Sprint(chat)
 	r.redis.Del(chatString + tokenSuffix)
-	passphrase := os.Getenv(r.passphaseKey)
-	if len(passphrase) == 0 {
+	bytes, err := encrypt([]byte(token), r.passphrase)
+	if err != nil {
 		return
 	}
-	r.redis.Set(chatString+encryptedTokenSuffix, encrypt([]byte(token), passphrase), 0)
+	r.redis.Set(chatString+encryptedTokenSuffix, bytes, 0)
 }
 
 func (r RedisStorage) GetToken(chat int64) (string, error) {
@@ -64,12 +64,11 @@ func (r RedisStorage) decryptToken(token string, err error) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	passphrase := os.Getenv(r.passphaseKey)
-	if len(passphrase) == 0 {
-		return "", errors.New("passphase for encrypting tokens is not set")
+	decryptedToken, err := decrypt([]byte(token), r.passphrase)
+	if err != nil {
+		return "", err
 	}
-	decryptedToken := string(decrypt([]byte(token), passphrase))
-	return decryptedToken, nil
+	return string(decryptedToken), nil
 }
 
 func createHash(key string) string {
@@ -78,36 +77,36 @@ func createHash(key string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func encrypt(data []byte, passphrase string) []byte {
+func encrypt(data []byte, passphrase string) ([]byte, error) {
 	block, _ := aes.NewCipher([]byte(createHash(passphrase)))
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	nonce := make([]byte, gcm.NonceSize())
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
-		panic(err.Error())
+		return nil, err
 	}
-	return gcm.Seal(nonce, nonce, data, nil)
+	return gcm.Seal(nonce, nonce, data, nil), nil
 }
 
-func decrypt(data []byte, passphrase string) []byte {
+func decrypt(data []byte, passphrase string) ([]byte, error) {
 	key := []byte(createHash(passphrase))
 	block, err := aes.NewCipher(key)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
 	nonceSize := gcm.NonceSize()
 	nonce, ciphertext := data[:nonceSize], data[nonceSize:]
 	plaintext, err := gcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		panic(err.Error())
+		return nil, err
 	}
-	return plaintext
+	return plaintext, err
 }
 
 func (r RedisStorage) SetHost(host string, chat int64) {
@@ -128,7 +127,11 @@ func NewStorageInstance(urlEnvironment string, storagePassphareKey string) (Mana
 	if err != nil {
 		return nil, err
 	}
-	return &RedisStorage{redisClient, storagePassphareKey}, err
+	passphrase := os.Getenv(storagePassphareKey)
+	if len(passphrase) == 0 {
+		return nil, errors.New("passphase for encrypting tokens is not set")
+	}
+	return &RedisStorage{redisClient, passphrase}, err
 }
 
 type redisInstance interface {

@@ -25,7 +25,11 @@ func (t *RedisMock) Del(keys ...string) *redis.IntCmd {
 }
 
 func (t *RedisMock) Set(key string, value interface{}, expiration time.Duration) *redis.StatusCmd {
-	t.mockStorage[key] = value.(string)
+	if valueString, ok := value.(string); ok {
+		t.mockStorage[key] = valueString
+	} else if bytes, ok := value.([]byte); ok {
+		t.mockStorage[key] = string(bytes)
+	}
 	return redis.NewStatusCmd(value)
 }
 
@@ -41,7 +45,7 @@ func TestHostStorage(t *testing.T) {
 	host := "www.google.com"
 	var chat int64 = 5
 	mock := newRedisMock()
-	sut := RedisStorage{mock}
+	sut := RedisStorage{mock, "123"}
 	sut.SetHost(host, chat)
 	if mock.mockStorage["5_host"] != host {
 		t.Errorf("storing value in redis failed, got: \"%s\"", mock.mockStorage["5_host"])
@@ -60,12 +64,25 @@ func TestTokenStorage(t *testing.T) {
 	token := "d3i3j423432"
 	var chat int64 = 5
 	mock := newRedisMock()
-	sut := RedisStorage{mock}
+	passphrase := "123"
+	sut := RedisStorage{mock, passphrase}
 	sut.SetToken(token, chat)
-	if mock.mockStorage["5_token"] != token {
-		t.Errorf("storing value in redis failed, got: \"%s\"", mock.mockStorage["5_token"])
+	restoredToken, err := sut.GetToken(chat)
+	if err != nil {
+		t.Errorf("getting error during token obtaining, got: %s", err)
 	}
+	if restoredToken != token {
+		t.Errorf("getting value from redis failed, expected: \"%s\", got: \"%s\"", token, restoredToken)
+	}
+}
 
+func TestMigrationStorage(t *testing.T) {
+	token := "d3i3j423432"
+	var chat int64 = 5
+	mock := newRedisMock()
+	passphrase := "123"
+	sut := RedisStorage{mock, passphrase}
+	sut.SetToken(token, chat)
 	restoredToken, err := sut.GetToken(chat)
 	if err != nil {
 		t.Errorf("getting error during token obtaining, got: %s", err)
@@ -79,7 +96,7 @@ func TestRedisStorage_ResetData(t *testing.T) {
 	token := "d3i3j423432"
 	var chat int64 = 5
 	mock := newRedisMock()
-	sut := RedisStorage{mock}
+	sut := RedisStorage{mock, "123"}
 	sut.SetToken(token, chat)
 	sut.SetHost("https://google.com", chat)
 
