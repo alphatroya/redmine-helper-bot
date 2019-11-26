@@ -11,11 +11,12 @@ import (
 
 const (
 	storageURLEnvKey     = "REDIS_URL"
+	storagePassphaseKey  = "STORAGE_PASSPHRASE"
 	telegramBotKeyEnvKey = "TELEGRAM_BOT_KEY"
 )
 
 func main() {
-	redisClient, err := storage.NewStorageInstance(storageURLEnvKey)
+	redisClient, err := storage.NewStorageInstance(storageURLEnvKey, storagePassphaseKey)
 	if err != nil {
 		log.Panicf("Storage configuration failed with error: %s", err)
 	}

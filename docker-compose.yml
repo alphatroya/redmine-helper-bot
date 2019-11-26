@@ -20,6 +20,7 @@ services:
       - redis_db
     environment:
       - TELEGRAM_BOT_KEY=$TELEGRAM_BOT_KEY
+      - STORAGE_PASSPHRASE=$STORAGE_PASSPHRASE
       - DEBUG=true
       - REDIS_URL=redis://redis_db:6379
       - GOPATH=/go
