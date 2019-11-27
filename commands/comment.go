@@ -58,9 +58,7 @@ func (a *AddComment) firstPhase(message string, host string) (*CommandResult, er
 	if err == nil {
 		a.updatingIssue = result.Issue
 		printedIssue := a.printer.Print(*result.Issue, false)
-		for _, element := range printedIssue {
-			responseMessage = append(responseMessage, element)
-		}
+		responseMessage = append(responseMessage, printedIssue...)
 		responseMessage = append(responseMessage, "_Напишите комментарий к задаче_")
 	} else {
 		responseMessage = []string{fmt.Sprintf("Напишите комментарий к задаче [#%s](%s/issues/%s)", issueID, host, issueID)}

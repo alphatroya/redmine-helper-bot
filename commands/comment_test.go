@@ -342,15 +342,3 @@ func TestAddComment_Handle_EmptyHost(t *testing.T) {
 		t.Errorf("Empty storage case should return an error")
 	}
 }
-
-func issuePrintMessage() string {
-	result := "\n\n\n"
-	result += "*Название*\n\n"
-	result += "`+-----------+-------------+\n"
-	result += "| СТАТУС    | Сделано     |\n"
-	result += "| АВТОР     | Сидоров Лев |\n"
-	result += "| НАЗНАЧЕНО | Иванов Иван |\n"
-	result += "+-----------+-------------+\n"
-	result += "`"
-	return result
-}
