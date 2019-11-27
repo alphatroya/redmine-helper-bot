@@ -5,6 +5,56 @@ import (
 	"testing"
 )
 
+func TestTablePrinter_PrintIssues(t *testing.T) {
+	testCases := []struct {
+		issues []*Issue
+		count  int
+	}{
+		{
+			issues: []*Issue{
+				{
+					ID: 1,
+					Project: struct {
+						ID   int    `json:"id"`
+						Name string `json:"name"`
+					}{
+						Name: "Project1",
+					},
+					Subject: "Foo",
+				},
+				{
+					ID: 3,
+					Project: struct {
+						ID   int    `json:"id"`
+						Name string `json:"name"`
+					}{
+						Name: "Project2",
+					},
+					Subject: "Bar",
+				},
+				{
+					ID: 2,
+					Project: struct {
+						ID   int    `json:"id"`
+						Name string `json:"name"`
+					}{
+						Name: "Project2",
+					},
+					Subject: "Bar",
+				},
+			},
+			count: 2,
+		},
+	}
+	for _, testCase := range testCases {
+		printer := TablePrinter{}
+		table := printer.PrintIssues(testCase.issues)
+		if len(table) != testCase.count {
+			t.Errorf("result message count should be equal to number of projects, got: %d, expected: %d", len(table), testCase.count)
+		}
+	}
+}
+
 func TestTablePrinter_Print(t *testing.T) {
 	testCases := []struct {
 		issue Issue

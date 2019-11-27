@@ -10,14 +10,16 @@ import (
 
 type RedmineMock struct {
 	sync.RWMutex
-	mockActivities      []*redmine.Activities
-	mockTimeEntries     []*redmine.TimeEntryResponse
-	err                 error
-	fillHoursErrorsMap  map[string]bool
-	filledIssues        []string
-	mockIssue           *redmine.IssueContainer
-	mockIssueErr        error
-	mockAddCommentError error
+	mockActivities        []*redmine.Activities
+	mockTimeEntries       []*redmine.TimeEntryResponse
+	err                   error
+	fillHoursErrorsMap    map[string]bool
+	filledIssues          []string
+	mockIssue             *redmine.IssueContainer
+	mockIssueErr          error
+	mockAddCommentError   error
+	mockAssignedIssues    []*redmine.Issue
+	mockAssignedIssuesErr error
 }
 
 func (r *RedmineMock) AddComment(issueID string, comment string, assignedTo int) error {
@@ -68,10 +70,18 @@ func (r *RedmineMock) Issue(issueID string) (*redmine.IssueContainer, error) {
 }
 
 func (r *RedmineMock) AssignedIssues() ([]*redmine.Issue, error) {
-	return nil, nil
+	return r.mockAssignedIssues, r.mockAssignedIssuesErr
 }
 
 type PrinterMock struct {
+}
+
+func (p PrinterMock) PrintIssues(issues []*redmine.Issue) []string {
+	var messages []string
+	for _, issue := range issues {
+		messages = append(messages, issue.Subject)
+	}
+	return messages
 }
 
 func (p PrinterMock) Print(issue redmine.Issue, printDescription bool) []string {

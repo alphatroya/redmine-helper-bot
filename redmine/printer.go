@@ -9,9 +9,32 @@ import (
 
 type Printer interface {
 	Print(issue Issue, printDescription bool) []string
+	PrintIssues(issues []*Issue) []string
 }
 
 type TablePrinter struct {
+}
+
+func (t TablePrinter) PrintIssues(issues []*Issue) (messages []string) {
+	projects := make(map[string][]*Issue)
+	for _, issue := range issues {
+		projects[issue.Project.Name] = append(projects[issue.Project.Name], issue)
+	}
+	for key, value := range projects {
+		tableBuilder := &strings.Builder{}
+		table := tablewriter.NewWriter(tableBuilder)
+		for _, issue := range value {
+			table.Append([]string{
+				fmt.Sprintf("%d", issue.ID),
+				issue.Status.Name,
+				issue.Subject,
+			})
+		}
+		table.SetCaption(true, key)
+		table.Render()
+		messages = append(messages, monospaced(tableBuilder.String()))
+	}
+	return
 }
 
 func (t TablePrinter) Print(issue Issue, printDescription bool) []string {
@@ -29,10 +52,14 @@ func (t TablePrinter) Print(issue Issue, printDescription bool) []string {
 	table.SetRowLine(true)
 	table.SetRowSeparator("-")
 	table.Render()
-	result = append(result, "`"+tableString.String()+"`")
+	result = append(result, monospaced(tableString.String()))
 
 	if printDescription {
 		result = append(result, "ОПИСАНИЕ:\n\n"+issue.Description)
 	}
 	return result
+}
+
+func monospaced(table string) string {
+	return "`" + table + "`"
 }

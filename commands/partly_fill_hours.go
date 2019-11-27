@@ -88,30 +88,26 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	if err != nil {
 		return nil, err
 	}
-	message += fmt.Sprintln("*Введите номер задачи*")
-	message += fmt.Sprintln("-----------------------------")
-	message += fmt.Sprintln("")
-	message += fmt.Sprintln("_Вы можете выбрать номер из списка снизу или ввести свой_")
-	message += fmt.Sprintln("")
-	projects := make(map[string][]*redmine.Issue)
-	for _, issue := range issues {
-		projects[issue.Project.Name] = append(projects[issue.Project.Name], issue)
+	messages := []string{
+		"_Введите номер задачи_",
+		"_Вы можете также ввести через пробел код активности, если хотите установить ее отличной от дефолтной (например \"54323 15\")._",
 	}
-	for key, value := range projects {
-		message += fmt.Sprintf("*%s*\n", key)
-		for _, issue := range value {
-			message += fmt.Sprintf("    *#%d* %s\n", issue.ID, issue.Subject)
-		}
-		message += fmt.Sprintln("")
-	}
-	message += fmt.Sprintln("_Вы можете также ввести через пробел код активности, если хотите установить ее отличной от дефолтной (например \"54323 15\")._")
-	message += fmt.Sprintln("_Список кодов можно получить с помощью команды /activities_")
-	p.issuesRequested = true
+
 	var buttons []string
 	for _, issue := range issues {
-		buttons = append(buttons, fmt.Sprintf("#%d - %s", issue.ID, issue.Subject))
+		var subject string
+		maxLength := 30
+		runes := []rune(issue.Subject)
+		if len(runes) <= maxLength {
+			subject = issue.Subject
+		} else {
+			subject = string(runes[:maxLength]) + "..."
+		}
+		buttons = append(buttons, fmt.Sprintf("#%d - %s", issue.ID, subject))
 	}
-	return NewCommandResultWithKeyboard(message, buttons), err
+
+	p.issuesRequested = true
+	return NewCommandResultWithMessagesAndKeyboard(messages, buttons), nil
 }
 
 func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, error) {
@@ -120,7 +116,7 @@ func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, err
 	if regexp.MustCompile(`^[0-9]+ - .+$`).MatchString(issueID) {
 		searchResult := regexp.MustCompile(`^[0-9]+`).Find([]byte(issueID))
 		if len(searchResult) != 0 {
-			return p.issueIDSuccess(issueID)
+			return p.issueIDSuccess(string(searchResult))
 		}
 	}
 
@@ -150,9 +146,7 @@ func (p *PartlyFillHoursCommand) issueIDSuccess(issueID string) (*CommandResult,
 func (p *PartlyFillHoursCommand) printIssueInfo(message string, italic bool) (successMessage []string) {
 	issue, _ := p.redmineClient.Issue(p.issueID)
 	if issue != nil {
-		for _, printed := range p.printer.Print(*issue.Issue, false) {
-			successMessage = append(successMessage, printed)
-		}
+		successMessage = append(successMessage, p.printer.Print(*issue.Issue, false)...)
 		if italic {
 			successMessage = append(successMessage, "_"+message+"_")
 		} else {
