@@ -25,7 +25,24 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"52233", "4"},
+					{"52233", "4.0"},
+				}),
+			storedHours: 4,
+			resultErr:   "",
+		},
+		{
+			input: "52233 54223 53312  52551 #Исправление",
+			output: successMessage(
+				"https://google.com",
+				true,
+				[]struct {
+					id    string
+					hours string
+				}{
+					{"52233", "1.0"},
+					{"52551", "1.0"},
+					{"53312", "1.0"},
+					{"54223", "1.0"},
 				}),
 			storedHours: 4,
 			resultErr:   "",
@@ -39,10 +56,10 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"52233", "1"},
-					{"52551", "1"},
-					{"53312", "1"},
-					{"54223", "1"},
+					{"52233", "1.0"},
+					{"52551", "1.0"},
+					{"53312", "1.0"},
+					{"54223", "1.0"},
 				}),
 			storedHours: 4,
 			resultErr:   "",
@@ -56,10 +73,10 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"52233", "1"},
-					{"52551", "1"},
-					{"53312", "1"},
-					{"54223", "1"},
+					{"52233", "1.0"},
+					{"52551", "1.0"},
+					{"53312", "1.0"},
+					{"54223", "1.0"},
 				}),
 			storedHours: 4,
 			resultErr:   "",
@@ -73,10 +90,10 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"52233", "1"},
-					{"52551", "1"},
-					{"53312", "1"},
-					{"54223", "1"},
+					{"52233", "1.0"},
+					{"52551", "1.0"},
+					{"53312", "1.0"},
+					{"54223", "1.0"},
 				}),
 			storedHours: 4,
 			resultErr:   "",
@@ -90,9 +107,9 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"52233", "3"},
-					{"52551", "3"},
-					{"53312", "2"},
+					{"52233", "2.7"},
+					{"52551", "2.7"},
+					{"53312", "2.7"},
 				}),
 			storedHours: 0,
 			resultErr:   "",
@@ -106,10 +123,10 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"52233", "2"},
-					{"52551", "2"},
-					{"53312", "2"},
-					{"54223", "2"},
+					{"52233", "2.0"},
+					{"52551", "2.0"},
+					{"53312", "2.0"},
+					{"54223", "2.0"},
 				}),
 			storedHours: 0,
 			resultErr:   "",
@@ -123,9 +140,9 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"52233", "3"},
-					{"53312", "3"},
-					{"54223", "2"},
+					{"52233", "2.7"},
+					{"53312", "2.7"},
+					{"54223", "2.7"},
 				}),
 			storedHours: 0,
 			resultErr:   "",
@@ -139,14 +156,13 @@ func TestFillHoursMany_Handle(t *testing.T) {
 					id    string
 					hours string
 				}{
-					{"52233", "3"},
-				}) + "\n" + errorsMessage(5,
+					{"52233", "2.7"},
+				}) + "\n" + errorsMessage(5.3,
 				[]struct {
-					id    string
-					hours string
+					id string
 				}{
-					{"63312", "3"},
-					{"74223", "2"},
+					{"63312"},
+					{"74223"},
 				}),
 			storedHours: 0,
 			resultErr:   "",
@@ -158,20 +174,14 @@ func TestFillHoursMany_Handle(t *testing.T) {
 		{
 			input:       "52233 54223 53312 Исправление",
 			output:      "",
-			storedHours: 8,
+			storedHours: 7.99,
 			resultErr:   "Вы сегодня уже работали 8 часов",
 		},
 		{
-			input:       "54221 44221 44421 Test",
+			input:       "52233 54223 53312 Исправление",
 			output:      "",
-			storedHours: 6,
-			resultErr:   "Вы ввели слишком много номеров задач. В целях точного распределения задач за день количество ограничено числом свободных за день часов",
-		},
-		{
-			input:       "54221 44221 44421 73312 3332 21211 333211 44321 32321 Test",
-			output:      "",
-			storedHours: 0,
-			resultErr:   "Вы ввели слишком много номеров задач. В целях точного распределения задач за день количество ограничено числом свободных за день часов",
+			storedHours: 8,
+			resultErr:   "Вы сегодня уже работали 8 часов",
 		},
 		{
 			input:     "",
@@ -232,16 +242,15 @@ func successMessage(host string, success bool, tasks []struct {
 	result += "| ЗАДАЧА | ЧАСЫ |\n"
 	result += "+--------+------+\n"
 	for _, task := range tasks {
-		result += fmt.Sprintf("|  %s |    %s |\n", task.id, task.hours)
+		result += fmt.Sprintf("|  %s |  %s |\n", task.id, task.hours)
 	}
 	result += "+--------+------+\n"
 	result += "`"
 	return result
 }
 
-func errorsMessage(remain int, tasks []struct {
-	id    string
-	hours string
+func errorsMessage(remain float64, tasks []struct {
+	id string
 }) string {
 	result := "Не удалось обновить задачи\n\n"
 	result += "`+--------+\n"
@@ -252,7 +261,7 @@ func errorsMessage(remain int, tasks []struct {
 	}
 	result += "+--------+\n"
 	result += "`\n"
-	result += fmt.Sprintf("Не удалось распределить %d ч.", remain)
+	result += fmt.Sprintf("Не удалось распределить %.1f ч.", remain)
 	return result
 }
 

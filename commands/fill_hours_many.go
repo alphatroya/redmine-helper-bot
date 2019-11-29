@@ -3,9 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
-	"math"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
@@ -39,11 +37,6 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 		return nil, err
 	}
 
-	issuesCount := len(issues)
-	if issuesCount > remainingHours {
-		return nil, errors.New("Вы ввели слишком много номеров задач. В целях точного распределения задач за день количество ограничено числом свободных за день часов")
-	}
-
 	hours := f.getHours(issues, remainingHours)
 
 	host, err := f.storage.GetHost(f.chatID)
@@ -58,7 +51,7 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 	successTable.SetHeader([]string{"Задача", "Часы"})
 
 	for _, timeEntry := range fillSuccess {
-		successTable.Append([]string{fmt.Sprintf("%d", timeEntry.TimeEntry.Issue.ID), fmt.Sprintf("%.0f", timeEntry.TimeEntry.Hours)})
+		successTable.Append([]string{fmt.Sprintf("%d", timeEntry.TimeEntry.Issue.ID), fmt.Sprintf("%.1f", timeEntry.TimeEntry.Hours)})
 	}
 	successTable.Render()
 
@@ -75,7 +68,7 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 		}
 		failureTable.Render()
 		responseMessage += "`" + failureTableString.String() + "`\n"
-		responseMessage += fmt.Sprintf("Не удалось распределить %d ч.", remain)
+		responseMessage += fmt.Sprintf("Не удалось распределить %.1f ч.", remain)
 	} else {
 		responseMessage = fmt.Sprintf("Задачи([%d](%s/time_entries)) успешно обновлены!\n\n", len(issues), host)
 		responseMessage += "`" + successTableString.String() + "`"
@@ -84,21 +77,21 @@ func (f FillHoursMany) Handle(message string) (*CommandResult, error) {
 	return NewCommandResult(responseMessage), nil
 }
 
-func (f FillHoursMany) fillIssuesResult(issues []string, hours []string, comment string) (fillSuccess []*redmine.TimeEntryBodyResponse, fillErrors []string, remain int) {
+func (f FillHoursMany) fillIssuesResult(issues []string, hours []float64, comment string) (fillSuccess []*redmine.TimeEntryBodyResponse, fillErrors []string, remain float64) {
 	type Result struct {
 		success       *redmine.TimeEntryBodyResponse
 		failure       string
-		failureRemain int
+		failureRemain float64
 	}
 	resultChan := make(chan Result)
 	for i, issue := range issues {
 		if i < len(hours) {
 			hour := hours[i]
-			go func(hour string, issue string) {
-				fillHoursResponse, err := f.redmineClient.FillHoursRequest(issue, hour, comment, "")
+			go func(hour float64, issue string) {
+				hourString := fmt.Sprintf("%.3f", hour)
+				fillHoursResponse, err := f.redmineClient.FillHoursRequest(issue, hourString, comment, "")
 				if err != nil {
-					hourInt, _ := strconv.Atoi(hour)
-					resultChan <- Result{nil, issue, hourInt}
+					resultChan <- Result{nil, issue, hour}
 					return
 				}
 				resultChan <- Result{fillHoursResponse, "", 0}
@@ -123,25 +116,22 @@ func (f FillHoursMany) fillIssuesResult(issues []string, hours []string, comment
 	return
 }
 
-func (f FillHoursMany) getHours(issues []string, remainingHours int) []string {
-	var hours []string
-	var remainingIssuesCount = len(issues)
-	for range issues {
-		hour := int(math.Ceil(float64(remainingHours) / float64(remainingIssuesCount)))
-		hours = append(hours, fmt.Sprintf("%d", hour))
-		remainingHours -= hour
-		remainingIssuesCount--
+func (f FillHoursMany) getHours(issues []string, remainingHours float64) (hours []float64) {
+	issuesCount := len(issues)
+	hours = make([]float64, issuesCount)
+	for i := range issues {
+		hours[i] = remainingHours / float64(issuesCount)
 	}
-	return hours
+	return
 }
 
-func (f FillHoursMany) getRemainingHours(timeEntries []*redmine.TimeEntryResponse) (int, error) {
-	var storedHours = 0
+func (f FillHoursMany) getRemainingHours(timeEntries []*redmine.TimeEntryResponse) (float64, error) {
+	var storedHours float64 = 0
 	for _, entry := range timeEntries {
-		storedHours += int(math.Ceil(float64(entry.Hours)))
+		storedHours += float64(entry.Hours)
 	}
-	const workDayLength = 8
-	if storedHours >= workDayLength {
+	const workDayLength = 8.0
+	if workDayLength-storedHours <= 0.02 {
 		return 0, errors.New("Вы сегодня уже работали 8 часов")
 	}
 	remainingHours := workDayLength - storedHours
@@ -157,6 +147,9 @@ func (f FillHoursMany) getIssuesAndComment(message string) ([]string, string, er
 	issuesMap := make(map[string]bool)
 	var comment string
 	for i, fragment := range fragments {
+		if len(fragment) == 0 {
+			continue
+		}
 		if trimmed, ok := redmine.CheckAndExtractIssueID(fragment); ok {
 			issuesMap[trimmed] = true
 		} else {
