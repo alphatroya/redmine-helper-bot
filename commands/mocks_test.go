@@ -51,10 +51,10 @@ func (r *RedmineMock) mockResponse(issueID string, hours string) (*redmine.TimeE
 	r.Lock()
 	r.filledIssues = append(r.filledIssues, issueID)
 	r.Unlock()
-	hoursInt, _ := strconv.Atoi(hours)
+	floatHours, _ := strconv.ParseFloat(hours, 64)
 	intIssueID, _ := strconv.Atoi(issueID)
 	timeEntry := redmine.TimeEntryResponse{
-		Hours: float32(hoursInt),
+		Hours: float32(floatHours),
 		Issue: redmine.TimeEntryResponseIssue{ID: intIssueID},
 	}
 	return &redmine.TimeEntryBodyResponse{
