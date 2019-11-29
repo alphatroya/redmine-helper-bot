@@ -30,18 +30,16 @@ type RedisStorage struct {
 
 const (
 	hostSuffix           = "_host"
-	tokenSuffix          = "_token"
 	encryptedTokenSuffix = "_encrypted"
 )
 
 func (r RedisStorage) ResetData(chat int64) error {
 	chatString := fmt.Sprint(chat)
-	return r.redis.Del(chatString+tokenSuffix, chatString+hostSuffix, chatString+encryptedTokenSuffix).Err()
+	return r.redis.Del(chatString+hostSuffix, chatString+encryptedTokenSuffix).Err()
 }
 
 func (r RedisStorage) SetToken(token string, chat int64) {
 	chatString := fmt.Sprint(chat)
-	r.redis.Del(chatString + tokenSuffix)
 	bytes, err := encrypt([]byte(token), r.passphrase)
 	if err != nil {
 		return
@@ -50,13 +48,7 @@ func (r RedisStorage) SetToken(token string, chat int64) {
 }
 
 func (r RedisStorage) GetToken(chat int64) (string, error) {
-	oldToken, _ := r.redis.Get(fmt.Sprint(chat) + tokenSuffix).Result()
 	newToken, err := r.redis.Get(fmt.Sprint(chat) + encryptedTokenSuffix).Result()
-	if len(oldToken) != 0 && len(newToken) == 0 {
-		r.SetToken(oldToken, chat)
-		token, err := r.redis.Get(fmt.Sprint(chat) + encryptedTokenSuffix).Result()
-		return r.decryptToken(token, err)
-	}
 	return r.decryptToken(newToken, err)
 }
 
@@ -71,14 +63,26 @@ func (r RedisStorage) decryptToken(token string, err error) (string, error) {
 	return string(decryptedToken), nil
 }
 
-func createHash(key string) string {
+func createHash(key string) (string, error) {
 	hasher := md5.New()
-	hasher.Write([]byte(key))
-	return hex.EncodeToString(hasher.Sum(nil))
+	_, err := hasher.Write([]byte(key))
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func encrypt(data []byte, passphrase string) ([]byte, error) {
-	block, _ := aes.NewCipher([]byte(createHash(passphrase)))
+	hash, err := createHash(passphrase)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher([]byte(hash))
+	if err != nil {
+		return nil, err
+	}
+
 	gcm, err := cipher.NewGCM(block)
 	if err != nil {
 		return nil, err
@@ -91,8 +95,12 @@ func encrypt(data []byte, passphrase string) ([]byte, error) {
 }
 
 func decrypt(data []byte, passphrase string) ([]byte, error) {
-	key := []byte(createHash(passphrase))
-	block, err := aes.NewCipher(key)
+	hash, err := createHash(passphrase)
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := aes.NewCipher([]byte(hash))
 	if err != nil {
 		return nil, err
 	}
