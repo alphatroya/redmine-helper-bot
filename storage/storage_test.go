@@ -68,6 +68,10 @@ func TestTokenStorage(t *testing.T) {
 	sut := RedisStorage{mock, passphrase}
 	sut.SetToken(token, chat)
 	restoredToken, err := sut.GetToken(chat)
+	if mock.mockStorage["5_encrypted"] == "" {
+		t.Error("storing value in redis failed, encrypted field is nil")
+	}
+
 	if err != nil {
 		t.Errorf("getting error during token obtaining, got: %s", err)
 	}
@@ -105,7 +109,7 @@ func TestRedisStorage_ResetData(t *testing.T) {
 		t.Errorf("reset data should no reset data, got err: %s", err)
 	}
 
-	if mock.mockStorage["5_token"] != "" || mock.mockStorage["5_host"] != "" {
+	if mock.mockStorage["5_encrypted"] != "" || mock.mockStorage["5_host"] != "" {
 		t.Errorf("storage data is not nil after resetting")
 	}
 }
