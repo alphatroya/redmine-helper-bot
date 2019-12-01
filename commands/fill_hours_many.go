@@ -179,19 +179,16 @@ func (f FillHoursMany) HelpMessage() string {
 
 _Синтаксис:_ '/fhm <один или несколько идентификаторов задач разделенных пробелом> <комментарий>'
 
-- Один комментарий будет установлен для всех перечисленных задач
-- Число задач не может быть больше числа свободных за сегодня часов
-
-_Пример:_ "/fhm 1 2 3 5 Исправление" при свободных *8 часах* установит значения:
+_Пример:_ "/fhm 1 2 3 5 Исправление" при свободных *8 часах* установит следующие значения:
 
 `
 	stringBuilder := &strings.Builder{}
 	table := tablewriter.NewWriter(stringBuilder)
 	table.SetHeader([]string{"ID", "Часы", "Комментарий"})
-	table.Append([]string{"1", "2", "Исправление"})
-	table.Append([]string{"2", "2", "Исправление"})
-	table.Append([]string{"3", "2", "Исправление"})
-	table.Append([]string{"5", "2", "Исправление"})
+	table.Append([]string{"1", "2.0", "Исправление"})
+	table.Append([]string{"2", "2.0", "Исправление"})
+	table.Append([]string{"3", "2.0", "Исправление"})
+	table.Append([]string{"5", "2.0", "Исправление"})
 	table.Render()
 	return message + "`" + stringBuilder.String() + "`"
 }
