@@ -16,7 +16,7 @@ func TestBotCommandsBuilder_Build(t *testing.T) {
 		{"*commands.SetHostCommand", "", "host"},
 		{"*commands.SetTokenCommand", "", "token"},
 		{"*commands.PartlyFillHoursCommand", "", "fillhours"},
-		{"*commands.Activities", "", "activities"},
+		{"*commands.Activities", "", "activity"},
 		{"*commands.IntroCommand", "", "start"},
 		{"*commands.StopCommand", "", "stop"},
 		{"*commands.UnknownCommand", "", ""},

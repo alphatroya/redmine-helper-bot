@@ -41,6 +41,25 @@ func (t *RedisMock) Get(key string) *redis.StringCmd {
 	return redis.NewStringResult(result, nil)
 }
 
+func TestActivityStorage(t *testing.T) {
+	activity := "6"
+	var chat int64 = 5
+	mock := newRedisMock()
+	sut := RedisStorage{mock, "123"}
+	sut.SetActivity(activity, chat)
+	if mock.mockStorage["5_activity"] != activity {
+		t.Errorf("storing value in redis failed, got: \"%s\"", mock.mockStorage["5_activity"])
+	}
+
+	restoredHost, err := sut.GetActivity(chat)
+	if err != nil {
+		t.Errorf("getting error during host obtaining, got: %s", err)
+	}
+	if restoredHost != activity {
+		t.Errorf("getting value from redis failed, expected: \"%s\", got: \"%s\"", activity, restoredHost)
+	}
+}
+
 func TestHostStorage(t *testing.T) {
 	host := "www.google.com"
 	var chat int64 = 5
@@ -103,13 +122,14 @@ func TestRedisStorage_ResetData(t *testing.T) {
 	sut := RedisStorage{mock, "123"}
 	sut.SetToken(token, chat)
 	sut.SetHost("https://google.com", chat)
+	sut.SetActivity("555", chat)
 
 	err := sut.ResetData(chat)
 	if err != nil {
 		t.Errorf("reset data should no reset data, got err: %s", err)
 	}
 
-	if mock.mockStorage["5_encrypted"] != "" || mock.mockStorage["5_host"] != "" {
+	if mock.mockStorage["5_encrypted"] != "" || mock.mockStorage["5_host"] != "" || mock.mockStorage["5_activity"] != "" {
 		t.Errorf("storage data is not nil after resetting")
 	}
 }

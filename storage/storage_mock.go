@@ -3,8 +3,21 @@ package storage
 import "fmt"
 
 type Mock struct {
-	storageToken map[int64]string
-	storageHost  map[int64]string
+	storageToken    map[int64]string
+	storageHost     map[int64]string
+	storageActivity map[int64]string
+}
+
+func (r *Mock) SetActivity(activity string, chat int64) {
+	r.storageActivity[chat] = activity
+}
+
+func (r *Mock) GetActivity(chat int64) (string, error) {
+	host, ok := r.storageActivity[chat]
+	if !ok {
+		return "", fmt.Errorf("storage value is nil")
+	}
+	return host, nil
 }
 
 func (r *Mock) ResetData(chat int64) error {
@@ -25,6 +38,7 @@ func NewStorageMock() *Mock {
 	mock := new(Mock)
 	mock.storageToken = make(map[int64]string)
 	mock.storageHost = make(map[int64]string)
+	mock.storageActivity = make(map[int64]string)
 	return mock
 }
 

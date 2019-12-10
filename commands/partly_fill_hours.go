@@ -90,7 +90,6 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 	}
 	messages := []string{
 		"_Введите номер задачи_",
-		"_Вы можете также ввести через пробел код активности, если хотите установить ее отличной от дефолтной (например \"54323 15\")._",
 	}
 
 	var buttons []string
@@ -112,18 +111,13 @@ func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResu
 
 func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, error) {
 	issueID = strings.TrimLeft(issueID, "#")
+	p.activityID, _ = p.storage.GetActivity(p.chatID)
 
 	if regexp.MustCompile(`^[0-9]+ - .+$`).MatchString(issueID) {
 		searchResult := regexp.MustCompile(`^[0-9]+`).Find([]byte(issueID))
 		if len(searchResult) != 0 {
 			return p.issueIDSuccess(string(searchResult))
 		}
-	}
-
-	parts := strings.Split(issueID, " ")
-	if len(parts) == 2 {
-		p.activityID = parts[1]
-		issueID = parts[0]
 	}
 
 	if !regexp.MustCompile(`^[0-9]+$`).MatchString(issueID) {

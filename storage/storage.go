@@ -20,6 +20,8 @@ type Manager interface {
 	GetToken(int64) (string, error)
 	SetHost(host string, chat int64)
 	GetHost(chat int64) (string, error)
+	SetActivity(activity string, chat int64)
+	GetActivity(chat int64) (string, error)
 	ResetData(chat int64) error
 }
 
@@ -28,14 +30,23 @@ type RedisStorage struct {
 	passphrase string
 }
 
+func (r RedisStorage) SetActivity(activity string, chat int64) {
+	r.redis.Set(fmt.Sprint(chat)+activitySuffix, activity, 0)
+}
+
+func (r RedisStorage) GetActivity(chat int64) (string, error) {
+	return r.redis.Get(fmt.Sprint(chat) + activitySuffix).Result()
+}
+
 const (
 	hostSuffix           = "_host"
 	encryptedTokenSuffix = "_encrypted"
+	activitySuffix       = "_activity"
 )
 
 func (r RedisStorage) ResetData(chat int64) error {
 	chatString := fmt.Sprint(chat)
-	return r.redis.Del(chatString+hostSuffix, chatString+encryptedTokenSuffix).Err()
+	return r.redis.Del(chatString+hostSuffix, chatString+encryptedTokenSuffix, chatString+activitySuffix).Err()
 }
 
 func (r RedisStorage) SetToken(token string, chat int64) {
