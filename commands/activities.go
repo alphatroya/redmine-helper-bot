@@ -37,7 +37,7 @@ func (a *Activities) Handle(message string) (*CommandResult, error) {
 		if fmt.Sprintf("%d", activity.Id) == activityID {
 			a.storage.SetActivity(activityID, a.chatID)
 			a.completed = true
-			return NewCommandResult("Активность по умолчанию успешно сохранена. Она будет использоваться при каждой команде заполнения часов"), nil
+			return NewCommandResult("_Активность по умолчанию успешно сохранена. Она будет использоваться при каждой команде заполнения часов_"), nil
 		}
 	}
 	return nil, errors.New(errorMessage)

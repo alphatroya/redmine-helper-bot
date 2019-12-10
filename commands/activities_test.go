@@ -45,7 +45,7 @@ func TestActivities_HandleFirstPhase(t *testing.T) {
 }
 
 func TestActivities_HandleSecondPhase(t *testing.T) {
-	successMessage := "Активность по умолчанию успешно сохранена. Она будет использоваться при каждой команде заполнения часов"
+	successMessage := "_Активность по умолчанию успешно сохранена. Она будет использоваться при каждой команде заполнения часов_"
 	errorMessage := "Вы ввели неправильный номер активности"
 	inputData := []struct {
 		input         string
