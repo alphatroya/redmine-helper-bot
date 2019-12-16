@@ -52,7 +52,7 @@ func NewFillHoursCommand(redmineClient redmine.Client, printer redmine.Printer, 
 	if err != nil {
 		return nil, err
 	}
-	_, err = command.setComment(strings.Join(split[2:], " "))
+	err = command.setComment(strings.Join(split[2:], " "))
 	if err != nil {
 		return nil, err
 	}
@@ -62,13 +62,13 @@ func NewFillHoursCommand(redmineClient redmine.Client, printer redmine.Printer, 
 
 func (p *PartlyFillHoursCommand) Handle(message string) (*CommandResult, error) {
 	if p.isCompleted {
-		return NewCommandResult("Операция выполнена"), nil
+		return NewCommandResult("_Операция выполнена_"), nil
 	}
 	if len(p.comment) > 0 {
 		return p.makeFillRequest()
 	}
 	if p.isHoursSet {
-		_, err := p.setComment(message)
+		err := p.setComment(message)
 		if err != nil {
 			return nil, err
 		}
@@ -80,10 +80,10 @@ func (p *PartlyFillHoursCommand) Handle(message string) (*CommandResult, error) 
 	if p.issuesRequested {
 		return p.setIssueID(message)
 	}
-	return p.makeIssuesRequest(message)
+	return p.makeIssuesRequest()
 }
 
-func (p *PartlyFillHoursCommand) makeIssuesRequest(message string) (*CommandResult, error) {
+func (p *PartlyFillHoursCommand) makeIssuesRequest() (*CommandResult, error) {
 	issues, err := p.redmineClient.AssignedIssues()
 	if err != nil {
 		return nil, err
@@ -160,23 +160,24 @@ func (p *PartlyFillHoursCommand) setHours(hours string) (*CommandResult, error) 
 	p.hours = hours
 	p.isHoursSet = true
 	activities, err := p.redmineClient.Activities()
+	successMessage := "_Количество часов установлено, введите комментарий_"
 	if err != nil {
-		return NewCommandResult("Количество часов установлено, введите комментарий"), nil
+		return NewCommandResult(successMessage), nil
 	}
 	activitiesButtons := []string{"Исправление бага"}
 	for _, activity := range activities {
 		activitiesButtons = append(activitiesButtons, activity.Name)
 	}
-	return NewCommandResultWithKeyboard("Количество часов установлено, введите комментарий", activitiesButtons), nil
+	return NewCommandResultWithKeyboard(successMessage, activitiesButtons), nil
 }
 
-func (p *PartlyFillHoursCommand) setComment(comment string) (*CommandResult, error) {
+func (p *PartlyFillHoursCommand) setComment(comment string) error {
 	comment = strings.TrimSpace(comment)
 	if len(comment) == 0 {
-		return nil, errors.New("Введена пустая команда")
+		return errors.New("Введена пустая команда")
 	}
 	p.comment = comment
-	return NewCommandResult("Комментарий сохранен"), nil
+	return nil
 }
 
 func (p *PartlyFillHoursCommand) makeFillRequest() (*CommandResult, error) {
