@@ -10,5 +10,5 @@ const (
 )
 
 func SuccessFillHoursMessageResponse(issueID int, hours float32, host string) string {
-	return fmt.Sprintf("В задачу [#%d](%s/issues/%d/time_entries) добавлено часов: *%.1f*", issueID, host, issueID, hours)
+	return fmt.Sprintf("_В задачу_ [#%d](%s/issues/%d/time_entries) _добавлено часов:_ *%.1f*", issueID, host, issueID, hours)
 }

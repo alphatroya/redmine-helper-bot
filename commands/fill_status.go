@@ -27,7 +27,7 @@ func (f FillStatus) Handle(message string) (*CommandResult, error) {
 	for _, timeEntry := range timeEntries {
 		sum += timeEntry.Hours
 	}
-	resultMessage := fmt.Sprintf(`Вы сегодня работали *%.1f ч.*`, sum)
+	resultMessage := fmt.Sprintf(`_Вы сегодня работали_ *%.1f ч.*`, sum)
 
 	if len(timeEntries) > 0 {
 		resultMessage += "\n\n"

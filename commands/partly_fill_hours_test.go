@@ -15,7 +15,7 @@ func TestPartlyFillHoursCommand_Handle(t *testing.T) {
 		result      *CommandResult
 		err         error
 	}{
-		{message: "test", isCompleted: true, isHoursSet: true, result: NewCommandResult("Операция выполнена"), err: nil},
+		{message: "test", isCompleted: true, isHoursSet: true, result: NewCommandResult("_Операция выполнена_"), err: nil},
 	}
 	for _, item := range data {
 		redmineMock := &RedmineMock{}
