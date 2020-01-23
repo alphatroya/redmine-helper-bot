@@ -1,6 +1,5 @@
 # Telegram бот для Redmine
 
-[![Build Status](https://travis-ci.org/alphatroya/redmine-helper-bot.svg?branch=master)](https://travis-ci.org/alphatroya/redmine-helper-bot)
 [![codecov](https://codecov.io/gh/alphatroya/redmine-helper-bot/branch/master/graph/badge.svg)](https://codecov.io/gh/alphatroya/redmine-helper-bot)
 
 Бот был создан для упрощения процесса заполнения часов в трекере задач Redmine. После быстрой настройки становится доступна команда `/fillhours` для старта пошагового процесса заполнения формы отчета.
