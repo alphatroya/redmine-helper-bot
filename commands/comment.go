@@ -3,6 +3,7 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
@@ -10,15 +11,16 @@ import (
 )
 
 type AddComment struct {
-	redmineClient redmine.Client
-	storage       storage.Manager
-	printer       redmine.Printer
-	chatID        int64
-	issueID       string
-	updatingIssue *redmine.Issue
-	comment       string
-	completed     bool
-	isReject      bool
+	redmineClient     redmine.Client
+	storage           storage.Manager
+	printer           redmine.Printer
+	chatID            int64
+	issueID           string
+	updatingIssue     *redmine.Issue
+	comment           string
+	completed         bool
+	isIssuesRequested bool
+	isReject          bool
 }
 
 func NewAddComment(redmineClient redmine.Client, storage storage.Manager, printer redmine.Printer, chatID int64) *AddComment {
@@ -48,10 +50,44 @@ func (a *AddComment) Handle(message string) (*CommandResult, error) {
 	}
 }
 
+func (a *AddComment) makeIssuesRequest() (*CommandResult, error) {
+	issues, err := a.redmineClient.AssignedIssues()
+	if err != nil {
+		return nil, err
+	}
+	messages := []string{
+		"_Введите номер задачи_",
+	}
+
+	var buttons []string
+	for _, issue := range issues {
+		var subject string
+		maxLength := 30
+		runes := []rune(issue.Subject)
+		if len(runes) <= maxLength {
+			subject = issue.Subject
+		} else {
+			subject = string(runes[:maxLength]) + "..."
+		}
+		buttons = append(buttons, fmt.Sprintf("#%d - %s", issue.ID, subject))
+	}
+
+	a.isIssuesRequested = true
+	return NewCommandResultWithMessagesAndKeyboard(messages, buttons), nil
+}
+
 func (a *AddComment) firstPhase(message string, host string) (*CommandResult, error) {
-	issueID, ok := redmine.CheckAndExtractIssueID(message)
+	var issueID string
+	var ok bool
+	message = strings.TrimLeft(message, "#")
+	if regexp.MustCompile(`^[0-9]+ - .+$`).MatchString(message) {
+		searchResult := regexp.MustCompile(`^[0-9]+`).Find([]byte(message))
+		if len(searchResult) != 0 {
+			issueID, ok = string(searchResult), true
+		}
+	}
 	if !ok {
-		return nil, errors.New("Вы ввели неправильный номер задачи")
+		return a.makeIssuesRequest()
 	}
 	var responseMessage []string
 	result, err := a.redmineClient.Issue(issueID)
