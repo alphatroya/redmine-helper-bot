@@ -3,28 +3,33 @@ package commands
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
+// AddComment defines command for sending comments for redmine issues
 type AddComment struct {
-	redmineClient redmine.Client
-	storage       storage.Manager
-	printer       redmine.Printer
-	chatID        int64
-	issueID       string
-	updatingIssue *redmine.Issue
-	comment       string
-	completed     bool
-	isReject      bool
+	redmineClient     redmine.Client
+	storage           storage.Manager
+	printer           redmine.Printer
+	chatID            int64
+	issueID           string
+	updatingIssue     *redmine.Issue
+	comment           string
+	completed         bool
+	isIssuesRequested bool
+	isReject          bool
 }
 
+// NewAddComment create a new AddComment command instance
 func NewAddComment(redmineClient redmine.Client, storage storage.Manager, printer redmine.Printer, chatID int64) *AddComment {
 	return &AddComment{redmineClient: redmineClient, storage: storage, printer: printer, chatID: chatID}
 }
 
+// Handle message received from user
 func (a *AddComment) Handle(message string) (*CommandResult, error) {
 	host, err := a.storage.GetHost(a.chatID)
 	if err != nil {
@@ -49,9 +54,23 @@ func (a *AddComment) Handle(message string) (*CommandResult, error) {
 }
 
 func (a *AddComment) firstPhase(message string, host string) (*CommandResult, error) {
-	issueID, ok := redmine.CheckAndExtractIssueID(message)
+	var issueID string
+	var ok bool
+	message = strings.TrimLeft(message, "#")
+	s := strings.Split(message, " ")
+	if len(s) >= 1 {
+		message = s[0]
+		searchResult := regexp.MustCompile(`^[0-9]+$`).Find([]byte(message))
+		if len(searchResult) != 0 {
+			issueID, ok = string(searchResult), true
+		}
+	}
 	if !ok {
-		return nil, errors.New("Вы ввели неправильный номер задачи")
+		command, err := makeIssuesRequest(a.redmineClient)
+		if err == nil {
+			a.isIssuesRequested = true
+		}
+		return command, err
 	}
 	var responseMessage []string
 	result, err := a.redmineClient.Issue(issueID)
@@ -98,6 +117,7 @@ func (a *AddComment) secondPhase(message string, host string) (*CommandResult, e
 	return NewCommandResult(message), nil
 }
 
+// IsCompleted indicates when meta command is fully complete
 func (a *AddComment) IsCompleted() bool {
 	return a.completed
 }

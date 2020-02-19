@@ -80,33 +80,11 @@ func (p *PartlyFillHoursCommand) Handle(message string) (*CommandResult, error) 
 	if p.issuesRequested {
 		return p.setIssueID(message)
 	}
-	return p.makeIssuesRequest()
-}
-
-func (p *PartlyFillHoursCommand) makeIssuesRequest() (*CommandResult, error) {
-	issues, err := p.redmineClient.AssignedIssues()
-	if err != nil {
-		return nil, err
+	command, err := makeIssuesRequest(p.redmineClient)
+	if err == nil {
+		p.issuesRequested = true
 	}
-	messages := []string{
-		"_Введите номер задачи_",
-	}
-
-	var buttons []string
-	for _, issue := range issues {
-		var subject string
-		maxLength := 30
-		runes := []rune(issue.Subject)
-		if len(runes) <= maxLength {
-			subject = issue.Subject
-		} else {
-			subject = string(runes[:maxLength]) + "..."
-		}
-		buttons = append(buttons, fmt.Sprintf("#%d - %s", issue.ID, subject))
-	}
-
-	p.issuesRequested = true
-	return NewCommandResultWithMessagesAndKeyboard(messages, buttons), nil
+	return command, err
 }
 
 func (p *PartlyFillHoursCommand) setIssueID(issueID string) (*CommandResult, error) {

@@ -45,7 +45,11 @@ func TestAddComment_Handle(t *testing.T) {
 			resultErr: "Вы ввели неправильный номер задачи",
 		},
 		{
-			command:   "34fdsd111",
+			command:   "1fdsd111",
+			resultErr: "Вы ввели неправильный номер задачи",
+		},
+		{
+			command:   "fdsd111",
 			resultErr: "Вы ввели неправильный номер задачи",
 		},
 		{
@@ -67,7 +71,7 @@ func TestAddComment_Handle(t *testing.T) {
 		{
 			command:  "#43214",
 			issueErr: fmt.Errorf("error"),
-			result:   []string{fmt.Sprintf("Напишите комментарий к задаче [#43214](%s/issues/43214)", host)},
+			result:   []string{"Напишите комментарий к задаче [#43214](https://google.com/issues/43214)"},
 		},
 	}
 
@@ -79,6 +83,7 @@ func TestAddComment_Handle(t *testing.T) {
 
 		redmineMock := &RedmineMock{}
 		if testCase.issue != nil {
+			redmineMock.mockAssignedIssues = []*redmine.Issue{testCase.issue}
 			redmineMock.mockIssue = &redmine.IssueContainer{Issue: testCase.issue}
 		}
 		if testCase.issueErr != nil {
@@ -86,6 +91,7 @@ func TestAddComment_Handle(t *testing.T) {
 		}
 
 		command := NewAddComment(redmineMock, storageMock, printerMock, chatID)
+		_, _ = command.Handle("")
 		result, err := command.Handle(testCase.command)
 		completed := command.IsCompleted()
 
@@ -101,7 +107,7 @@ func TestAddComment_Handle(t *testing.T) {
 		}
 
 		if len(result.buttons) != 0 {
-			t.Error("success command should not return buttons")
+			t.Errorf("success command should return button one button, got: %v", result.buttons)
 		}
 
 		for i, caseResult := range testCase.result {
@@ -181,6 +187,7 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 		storageMock.SetHost(host, chatID)
 
 		redmineMock := &RedmineMock{}
+		redmineMock.mockAssignedIssues = []*redmine.Issue{mockIssue}
 		redmineMock.mockIssue = &redmine.IssueContainer{Issue: mockIssue}
 		if testCase.addCommentErr != nil {
 			redmineMock.mockAddCommentError = testCase.addCommentErr
@@ -189,6 +196,7 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 		printerMock := PrinterMock{}
 		command := NewAddComment(redmineMock, storageMock, printerMock, chatID)
 		command.isReject = testCase.isRefuse
+		_, _ = command.Handle("")
 		_, _ = command.Handle(issueID)
 		result, err := command.Handle(testCase.command)
 		completed := command.IsCompleted()
