@@ -10,6 +10,7 @@ import (
 	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
+// AddComment defines command for sending comments for redmine issues
 type AddComment struct {
 	redmineClient     redmine.Client
 	storage           storage.Manager
@@ -80,8 +81,10 @@ func (a *AddComment) firstPhase(message string, host string) (*CommandResult, er
 	var issueID string
 	var ok bool
 	message = strings.TrimLeft(message, "#")
-	if regexp.MustCompile(`^[0-9]+ - .+$`).MatchString(message) {
-		searchResult := regexp.MustCompile(`^[0-9]+`).Find([]byte(message))
+	s := strings.Split(message, " ")
+	if len(s) >= 1 {
+		message = s[0]
+		searchResult := regexp.MustCompile(`^[0-9]+$`).Find([]byte(message))
 		if len(searchResult) != 0 {
 			issueID, ok = string(searchResult), true
 		}
