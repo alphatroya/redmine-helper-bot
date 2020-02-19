@@ -202,7 +202,6 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 		completed := command.IsCompleted()
 
 		if completed != testCase.completed {
-			t.Logf("result of message %s", testCase.command)
 			t.Errorf("completed status is not same to expected, got: %t, expected: %t", completed, testCase.completed)
 		}
 

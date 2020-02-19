@@ -24,10 +24,12 @@ type AddComment struct {
 	isReject          bool
 }
 
+// NewAddComment create a new AddComment command instance
 func NewAddComment(redmineClient redmine.Client, storage storage.Manager, printer redmine.Printer, chatID int64) *AddComment {
 	return &AddComment{redmineClient: redmineClient, storage: storage, printer: printer, chatID: chatID}
 }
 
+// Handle message received from user
 func (a *AddComment) Handle(message string) (*CommandResult, error) {
 	host, err := a.storage.GetHost(a.chatID)
 	if err != nil {
@@ -51,32 +53,6 @@ func (a *AddComment) Handle(message string) (*CommandResult, error) {
 	}
 }
 
-func (a *AddComment) makeIssuesRequest() (*CommandResult, error) {
-	issues, err := a.redmineClient.AssignedIssues()
-	if err != nil {
-		return nil, err
-	}
-	messages := []string{
-		"_Введите номер задачи_",
-	}
-
-	var buttons []string
-	for _, issue := range issues {
-		var subject string
-		maxLength := 30
-		runes := []rune(issue.Subject)
-		if len(runes) <= maxLength {
-			subject = issue.Subject
-		} else {
-			subject = string(runes[:maxLength]) + "..."
-		}
-		buttons = append(buttons, fmt.Sprintf("#%d - %s", issue.ID, subject))
-	}
-
-	a.isIssuesRequested = true
-	return NewCommandResultWithMessagesAndKeyboard(messages, buttons), nil
-}
-
 func (a *AddComment) firstPhase(message string, host string) (*CommandResult, error) {
 	var issueID string
 	var ok bool
@@ -90,7 +66,11 @@ func (a *AddComment) firstPhase(message string, host string) (*CommandResult, er
 		}
 	}
 	if !ok {
-		return a.makeIssuesRequest()
+		command, err := makeIssuesRequest(a.redmineClient)
+		if err == nil {
+			a.isIssuesRequested = true
+		}
+		return command, err
 	}
 	var responseMessage []string
 	result, err := a.redmineClient.Issue(issueID)
@@ -137,6 +117,7 @@ func (a *AddComment) secondPhase(message string, host string) (*CommandResult, e
 	return NewCommandResult(message), nil
 }
 
+// IsCompleted indicates when meta command is fully complete
 func (a *AddComment) IsCompleted() bool {
 	return a.completed
 }
