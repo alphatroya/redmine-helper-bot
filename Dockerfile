@@ -1,6 +1,16 @@
-FROM golang:1.13
-RUN mkdir /app
-COPY . /app/
+FROM golang:1.13 AS builder
 WORKDIR /app
-RUN go build -o main .
-CMD ["/app/main"]
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+
+FROM alpine:3.9
+
+RUN adduser -D -g '' botuser
+USER botuser
+
+WORKDIR /home/botuser
+COPY --from=builder /app/main .
+
+CMD ["./main"]
