@@ -1,28 +1,66 @@
 GO_BIN := $(GOPATH)/bin
 GOIMPORTS := $(GO_BIN)/goimports
-GOLINT := $(GO_BIN)/golangci-lint
+GOLANGCI := $(GO_BIN)/golangci-lint
 
-all: install
+## build: Build an application
+.PHONY: build
+build: fmt
+	go build -v -o main
 
-install: fmt
+## install: Install application
+.PHONY: install
+install:
 	go install -v
 
+## run: Run application
+.PHONY: run
+run: fmt
+	go run .
+
+## test: Launch unit tests
+.PHONY: test
 test:
-	go test ./... -v
+	go test ./...
 
+## coverage: Launch unit tests
+.PHONY: coverage
 coverage:
-	go test ./... -v -race -coverprofile=coverage.txt -covermode=atomic
+	@go test -v -coverpkg=./... -coverprofile=profile.cov ./... > /dev/null
+	@go tool cover -func profile.cov | tail -n 1
+	@rm -fr profile.cov
 
-lint: $(GOLINT)
-	golangci-lint run
+## clean: Cleanup build artefacts
+.PHONY:
+clean:
+	go clean
 
+## generate: Regenerate all required files
+generate:
+	go generate
+
+## tidy: Cleanup go.sum and go.mod files
+.PHONY: tidy
+tidy:
+	go mod tidy
+
+## lint: Launch project linters
+.PHONY: lint
+lint: $(GOLANGCI)
+	$(GOLANGCI) run
+
+## fmt: Reformat source code
+.PHONY: fmt
 fmt: $(GOIMPORTS)
-	goimports -w -l .
+	$(GOIMPORTS) -w -l .
 
 $(GOIMPORTS):
-	go get -u golang.org/x/tools/cmd/goimports
+	go install golang.org/x/tools/cmd/goimports@master
 
-$(GOLINT):
-	go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+$(GOLANGCI):
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.40.1
 
-.PHONY: install test fmt lint
+## help: Prints help message
+.PHONY: help
+help:
+	@echo "Usage: \n"
+	@sed -n 's/^##//p' ${MAKEFILE_LIST} | column -t -s ':' |  sed -e 's/^/ /' | sort
