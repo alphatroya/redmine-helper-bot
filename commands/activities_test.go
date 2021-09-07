@@ -11,8 +11,8 @@ import (
 
 func TestActivities_HandleFirstPhase(t *testing.T) {
 	redmineMock := &RedmineMock{mockActivities: []*redmine.Activities{
-		{Id: 5, Name: "Test"},
-		{Id: 1, Name: "Test2"},
+		{ID: 5, Name: "Test"},
+		{ID: 1, Name: "Test2"},
 	}}
 	storageMock := storage.NewStorageMock()
 	sut := newActivitiesCommand(redmineMock, storageMock, 1)
@@ -38,7 +38,7 @@ func TestActivities_HandleFirstPhase(t *testing.T) {
 	}
 	for i, button := range result.buttons {
 		mockActivity := redmineMock.mockActivities[i]
-		if button != fmt.Sprintf("%d - %s", mockActivity.Id, mockActivity.Name) {
+		if button != fmt.Sprintf("%d - %s", mockActivity.ID, mockActivity.Name) {
 			t.Errorf("received wrong buttons title, got: %s", button)
 		}
 	}
@@ -62,8 +62,8 @@ func TestActivities_HandleSecondPhase(t *testing.T) {
 
 	for _, data := range inputData {
 		redmineMock := &RedmineMock{mockActivities: []*redmine.Activities{
-			{Id: 5, Name: "Test"},
-			{Id: 1, Name: "Test2"},
+			{ID: 5, Name: "Test"},
+			{ID: 1, Name: "Test2"},
 		}}
 		storageMock := storage.NewStorageMock()
 		sut := newActivitiesCommand(redmineMock, storageMock, 1)
@@ -112,8 +112,8 @@ func TestActivities_HandleFirstPhaseError(t *testing.T) {
 
 func TestActivities_IsCompleted(t *testing.T) {
 	redmineMock := &RedmineMock{mockActivities: []*redmine.Activities{
-		{Id: 5, Name: "Test"},
-		{Id: 1, Name: "Test2"},
+		{ID: 5, Name: "Test"},
+		{ID: 1, Name: "Test2"},
 	}}
 	storageMock := storage.NewStorageMock()
 	sut := newActivitiesCommand(redmineMock, storageMock, 1)

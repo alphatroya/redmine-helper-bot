@@ -34,7 +34,7 @@ func (a *Activities) Handle(message string) (*CommandResult, error) {
 	}
 
 	for _, activity := range a.activities {
-		if fmt.Sprintf("%d", activity.Id) == activityID {
+		if fmt.Sprintf("%d", activity.ID) == activityID {
 			a.storage.SetActivity(activityID, a.chatID)
 			a.completed = true
 			return NewCommandResult("_Активность по умолчанию успешно сохранена. Она будет использоваться при каждой команде заполнения часов_"), nil
@@ -55,7 +55,7 @@ func (a *Activities) firstPhase() (*CommandResult, error) {
 
 	var buttons []string
 	for _, activity := range activities {
-		activityID := fmt.Sprintf("%d", activity.Id)
+		activityID := fmt.Sprintf("%d", activity.ID)
 		data := []string{
 			activityID,
 			wrap(activity.Name, 20),

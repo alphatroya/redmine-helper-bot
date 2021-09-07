@@ -9,7 +9,7 @@ type ActivitiesRoot struct {
 }
 
 type Activities struct {
-	Id   int    `json:"id"`
+	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -20,8 +20,7 @@ func (r *ClientManager) Activities() ([]*Activities, error) {
 	}
 
 	activities := new(ActivitiesRoot)
-	err = json.Unmarshal(bytesResponse, activities)
-	if err != nil {
+	if err = json.Unmarshal(bytesResponse, activities); err != nil {
 		return nil, err
 	}
 	return activities.TimeEntryActivities, nil
