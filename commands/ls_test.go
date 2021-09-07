@@ -49,7 +49,6 @@ func TestMyIssues_Handle(t *testing.T) {
 				t.Errorf("result messages check failed, got: %s, expected: %s", got, expected)
 			}
 		}
-
 	}
 }
 

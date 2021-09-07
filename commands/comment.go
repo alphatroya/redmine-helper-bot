@@ -10,7 +10,7 @@ import (
 	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
-// AddComment defines command for sending comments for redmine issues
+// AddComment defines command for sending comments for redmine issues.
 type AddComment struct {
 	redmineClient     redmine.Client
 	storage           storage.Manager
@@ -24,12 +24,12 @@ type AddComment struct {
 	isReject          bool
 }
 
-// NewAddComment create a new AddComment command instance
+// NewAddComment create a new AddComment command instance.
 func NewAddComment(redmineClient redmine.Client, storage storage.Manager, printer redmine.Printer, chatID int64) *AddComment {
 	return &AddComment{redmineClient: redmineClient, storage: storage, printer: printer, chatID: chatID}
 }
 
-// Handle message received from user
+// Handle message received from user.
 func (a *AddComment) Handle(message string) (*CommandResult, error) {
 	host, err := a.storage.GetHost(a.chatID)
 	if err != nil {
@@ -117,7 +117,7 @@ func (a *AddComment) secondPhase(message string, host string) (*CommandResult, e
 	return NewCommandResult(message), nil
 }
 
-// IsCompleted indicates when meta command is fully complete
+// IsCompleted indicates when meta command is fully complete.
 func (a *AddComment) IsCompleted() bool {
 	return a.completed
 }
