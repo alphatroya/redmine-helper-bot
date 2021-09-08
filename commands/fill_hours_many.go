@@ -126,7 +126,7 @@ func (f FillHoursMany) getHours(issues []string, remainingHours float64) (hours 
 }
 
 func (f FillHoursMany) getRemainingHours(timeEntries []*redmine.TimeEntryResponse) (float64, error) {
-	var storedHours float64 = 0
+	var storedHours float64
 	for _, entry := range timeEntries {
 		storedHours += float64(entry.Hours)
 	}
