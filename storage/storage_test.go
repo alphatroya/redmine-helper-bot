@@ -79,8 +79,9 @@ func TestHostStorage(t *testing.T) {
 	}
 }
 
+const token = "d3i3j423432"
+
 func TestTokenStorage(t *testing.T) {
-	token := "d3i3j423432"
 	var chat int64 = 5
 	mock := newRedisMock()
 	passphrase := "123"
@@ -100,7 +101,6 @@ func TestTokenStorage(t *testing.T) {
 }
 
 func TestMigrationStorage(t *testing.T) {
-	token := "d3i3j423432"
 	var chat int64 = 5
 	mock := newRedisMock()
 	passphrase := "123"
@@ -116,7 +116,6 @@ func TestMigrationStorage(t *testing.T) {
 }
 
 func TestRedisStorage_ResetData(t *testing.T) {
-	token := "d3i3j423432"
 	var chat int64 = 5
 	mock := newRedisMock()
 	sut := RedisStorage{mock, "123"}
@@ -124,8 +123,7 @@ func TestRedisStorage_ResetData(t *testing.T) {
 	sut.SetHost("https://google.com", chat)
 	sut.SetActivity("555", chat)
 
-	err := sut.ResetData(chat)
-	if err != nil {
+	if err := sut.ResetData(chat); err != nil {
 		t.Errorf("reset data should no reset data, got err: %s", err)
 	}
 

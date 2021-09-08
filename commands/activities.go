@@ -58,7 +58,7 @@ func (a *Activities) firstPhase() (*CommandResult, error) {
 		activityID := fmt.Sprintf("%d", activity.ID)
 		data := []string{
 			activityID,
-			wrap(activity.Name, 20),
+			wrap(activity.Name, StandardWrapValue),
 		}
 		buttons = append(buttons, activityID+" - "+activity.Name)
 		table.Append(data)

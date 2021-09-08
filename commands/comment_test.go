@@ -9,8 +9,9 @@ import (
 	"github.com/alphatroya/redmine-helper-bot/storage"
 )
 
+const host = "https://google.com"
+
 func TestAddComment_Handle(t *testing.T) {
-	host := "https://google.com"
 	mockIssue := &redmine.Issue{
 		AssignedTo: struct {
 			ID   int    `json:"id"`
@@ -120,7 +121,6 @@ func TestAddComment_Handle(t *testing.T) {
 }
 
 func TestAddComment_Handle_Phase2(t *testing.T) {
-	host := "https://google.com"
 	issueID := "43213"
 	mockIssue := &redmine.Issue{
 		AssignedTo: struct {
@@ -231,7 +231,6 @@ func TestAddComment_Handle_Phase2(t *testing.T) {
 }
 
 func TestAddComment_Handle_Phase3(t *testing.T) {
-	host := "https://google.com"
 	issueID := "43213"
 	mockIssue := &redmine.Issue{
 		AssignedTo: struct {
@@ -345,8 +344,7 @@ func TestAddComment_Handle_EmptyHost(t *testing.T) {
 	redmineMock := &RedmineMock{}
 	printerMock := PrinterMock{}
 	command := NewAddComment(redmineMock, storageMock, printerMock, chatID)
-	_, err := command.Handle("Foo")
-	if err == nil {
+	if _, err := command.Handle("Foo"); err == nil {
 		t.Errorf("Empty storage case should return an error")
 	}
 }

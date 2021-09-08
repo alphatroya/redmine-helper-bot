@@ -125,7 +125,7 @@ func (r *ClientManager) sendMessage(bodyBuffer io.Reader, requestMethod string, 
 		return nil, err
 	}
 	defer response.Body.Close()
-	if response.StatusCode >= 400 {
+	if response.StatusCode >= http.StatusBadRequest {
 		return nil, WrongStatusCodeError(response.StatusCode, http.StatusText(response.StatusCode))
 	}
 	return ioutil.ReadAll(response.Body)

@@ -41,7 +41,7 @@ func (f FillStatus) Handle(message string) (*CommandResult, error) {
 				fmt.Sprintf("%.1f", entry.Hours),
 				fmt.Sprintf("%d", entry.Issue.ID),
 				wrap(entry.Activity.Name, 10),
-				wrap(entry.Comments, 20),
+				wrap(entry.Comments, StandardWrapValue),
 			}
 			table.Append(data)
 		}

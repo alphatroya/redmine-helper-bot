@@ -6,6 +6,8 @@ import (
 	"github.com/alphatroya/redmine-helper-bot/redmine"
 )
 
+const StandardWrapValue = 20
+
 func wrap(line string, limit int) string {
 	if limit <= 3 {
 		return line
