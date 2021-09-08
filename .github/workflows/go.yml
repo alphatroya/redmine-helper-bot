@@ -10,7 +10,7 @@ jobs:
     - name: Set up Go 1.13
       uses: actions/setup-go@v1
       with:
-        go-version: 1.13
+        go-version: 1.17
       id: go
 
     - name: Check out code into the Go module directory
@@ -18,10 +18,5 @@ jobs:
 
     - name: Launch unit tests
       run: |
-        make coverage
+        make tests
 
-    - name: Upload Coverage report to CodeCov
-      uses: codecov/codecov-action@v1.0.0
-      with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          file: ./coverage.txt
