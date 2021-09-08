@@ -46,7 +46,7 @@ func TestTokenRequest(t *testing.T) {
 		{"host", "", 1, wrongHostArgumentsText},
 		{"host", " ", 1, wrongHostArgumentsText},
 		{"host", "test test", 1, wrongHostArgumentsText},
-		{"host", "test", 1, "parse test: invalid URI for request"},
+		{"host", "test", 1, "parse \"test\": invalid URI for request"},
 		{"host", "https://www.google.com", 1, "Адрес сервера успешно обновлен"},
 	}
 
@@ -55,7 +55,7 @@ func TestTokenRequest(t *testing.T) {
 
 		handler.Handle(message.command, message.message, message.chatID)
 		if botMock.text != message.expected {
-			t.Errorf("Wrong response command: %s, arguments: %s, expected: %s, received: %s", message.command, message.message, message.expected, botMock.text)
+			t.Errorf("Wrong response command: %s\narguments: %s\nexpected: %s\nreceived: %s", message.command, message.message, message.expected, botMock.text)
 		}
 
 		teardownSubTest(t)
