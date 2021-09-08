@@ -35,7 +35,7 @@ func TestMyIssues_Handle(t *testing.T) {
 		sut := NewMyIssuesCommand(redmineMock, printerMock)
 		messages, err := sut.Handle("")
 		if testCase.issuesErr != nil {
-			if testCase.issuesErr != err {
+			if !errors.Is(testCase.issuesErr, err) {
 				t.Errorf("mock errors not the same, got: %s, expected: %s", err, testCase.issuesErr)
 			}
 			continue

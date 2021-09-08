@@ -100,8 +100,7 @@ func TestActivities_HandleFirstPhaseError(t *testing.T) {
 	storageMock := storage.NewStorageMock()
 	sut := newActivitiesCommand(redmineMock, storageMock, 1)
 	result, err := sut.Handle("")
-	expectedResult := "test"
-	if err != nil && err.Error() != expectedResult {
+	if expectedResult := "test"; err != nil && err.Error() != expectedResult {
 		t.Errorf("getting wrong result text expected: %s, got: %s", expectedResult, err)
 	}
 
