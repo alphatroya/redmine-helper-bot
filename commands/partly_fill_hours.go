@@ -15,7 +15,7 @@ import (
 
 type PartlyFillHoursCommand struct {
 	redmineClient   redmine.Client
-	printer         redmine.Printer
+	printer         Printer
 	storage         storage.Manager
 	chatID          int64
 	issuesRequested bool
@@ -33,11 +33,11 @@ func (p *PartlyFillHoursCommand) IsCompleted() bool {
 	return p.isCompleted
 }
 
-func newPartlyFillHoursCommand(redmineClient redmine.Client, printer redmine.Printer, storage storage.Manager, chatID int64) *PartlyFillHoursCommand {
+func newPartlyFillHoursCommand(redmineClient redmine.Client, printer Printer, storage storage.Manager, chatID int64) *PartlyFillHoursCommand {
 	return &PartlyFillHoursCommand{redmineClient: redmineClient, printer: printer, storage: storage, chatID: chatID}
 }
 
-func NewFillHoursCommand(redmineClient redmine.Client, printer redmine.Printer, storage storage.Manager, chatID int64, message string) (*PartlyFillHoursCommand, error) {
+func NewFillHoursCommand(redmineClient redmine.Client, printer Printer, storage storage.Manager, chatID int64, message string) (*PartlyFillHoursCommand, error) {
 	command := newPartlyFillHoursCommand(redmineClient, printer, storage, chatID)
 	split := strings.Split(message, " ")
 	if len(split) < 3 {

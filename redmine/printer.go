@@ -7,10 +7,6 @@ import (
 	"github.com/olekukonko/tablewriter"
 )
 
-type Printer interface {
-	Print(issue Issue, printDescription bool) []string
-}
-
 type TablePrinter struct {
 }
 

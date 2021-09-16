@@ -13,7 +13,7 @@ type Builder interface {
 
 type BotCommandsBuilder struct {
 	storage storage.Manager
-	printer redmine.Printer
+	printer Printer
 }
 
 func NewBotCommandsBuilder(storage storage.Manager) *BotCommandsBuilder {

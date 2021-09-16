@@ -14,7 +14,7 @@ import (
 type AddComment struct {
 	redmineClient     redmine.Client
 	storage           storage.Manager
-	printer           redmine.Printer
+	printer           Printer
 	chatID            int64
 	issueID           string
 	updatingIssue     *redmine.Issue
@@ -25,7 +25,7 @@ type AddComment struct {
 }
 
 // NewAddComment create a new AddComment command instance.
-func NewAddComment(redmineClient redmine.Client, storage storage.Manager, printer redmine.Printer, chatID int64) *AddComment {
+func NewAddComment(redmineClient redmine.Client, storage storage.Manager, printer Printer, chatID int64) *AddComment {
 	return &AddComment{redmineClient: redmineClient, storage: storage, printer: printer, chatID: chatID}
 }
 
