@@ -20,7 +20,7 @@ func TestBotCommandsBuilder_Build(t *testing.T) {
 		{"*commands.StopCommand", "", "stop"},
 		{"*commands.UnknownCommand", "", ""},
 		{"*commands.UnknownCommand", "", "sss"},
-		{"*commands.PartlyFillHoursCommand", "54223 4 Test", "fh"},
+		{"*commands.FillHoursCommand", "54223 4 Test", "fh"},
 		{"*commands.UnknownCommand", "", "fh"},
 		{"*commands.FillStatus", "", "fstatus"},
 		{"*commands.FillHoursMany", "", "fhm"},

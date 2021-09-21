@@ -123,39 +123,3 @@ func TestHandleHostMessageWithCorrectCommand(t *testing.T) {
 		}
 	}
 }
-
-func TestHandleFillHoursNilTokenFailCommand(t *testing.T) {
-	teardownSubTest := setupSubTest(t)
-	defer teardownSubTest(t)
-
-	input := struct {
-		command  string
-		message  string
-		chatID   int64
-		expected string
-	}{"fillhours", "43212 8 Test", 44, "Адрес сервера не задан! Пожалуйста задайте его с помощью команды /host <адрес сервера>"}
-
-	handler.Handle(input.command, input.message, input.chatID)
-	if input.expected != botMock.text {
-		t.Errorf("Wrong response from fill hours method got: %s, expected: %s", botMock.text, input.expected)
-	}
-}
-
-func TestHandleFillHoursNilHostFailCommand(t *testing.T) {
-	teardownSubTest := setupSubTest(t)
-	defer teardownSubTest(t)
-
-	input := struct {
-		command  string
-		message  string
-		chatID   int64
-		expected string
-	}{"fillhours", "43212 8 Test", 44, "Адрес сервера не задан! Пожалуйста задайте его с помощью команды /host <адрес сервера>" +
-		""}
-
-	redisMock.SetToken("TestToken", input.chatID)
-	handler.Handle(input.command, input.message, input.chatID)
-	if input.expected != botMock.text {
-		t.Errorf("Wrong response from fill hours method got %s, expected %s", botMock.text, input.expected)
-	}
-}
