@@ -26,9 +26,6 @@ func (b BotCommandsBuilder) Build(command string, message string, chatID int64) 
 		return newSetTokenCommand(b.storage, chatID)
 	case "host":
 		return newSetHostCommand(b.storage, chatID)
-	case "fillhours":
-		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
-		return newPartlyFillHoursCommand(redmineClient, b.printer, b.storage, chatID)
 	case "activity":
 		redmineClient := redmine.NewClientManager(&http.Client{}, b.storage, chatID)
 		return newActivitiesCommand(redmineClient, b.storage, chatID)
